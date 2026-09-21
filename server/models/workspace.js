@@ -1,39 +1,28 @@
 import mongoose from "mongoose";
 
-const workspaceMemberSchema = new mongoose.Schema(
-  {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true
-    },
-
-    role: {
-      type: String,
-      enum: ["owner", "admin", "member"],
-      default: "member"
-    }
-  },
-  {
-    _id: false
-  }
-);
-
 const workspaceSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
-      trim: true
+      required: [true, "Workspace name is required"],
+      trim: true,
+      minlength: 2,
+      maxlength: 100
+    },
+
+    description: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+      default: ""
     },
 
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
-    },
-
-    members: [workspaceMemberSchema]
+      required: true,
+      index: true
+    }
   },
   {
     timestamps: true

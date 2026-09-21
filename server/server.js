@@ -1,50 +1,25 @@
-import express from "express";
-import cors from "cors";
 import dotenv from "dotenv";
-import { Server } from "socket.io";
 import http from "http";
+import { Server } from "socket.io";
 
+import app from "./app.js";
 import connectDB from "./config/db.js";
-
-import authRoutes from "./routes/authRoutes.js";
-import workspaceRoutes from "./routes/workspaceRoutes.js";
 
 dotenv.config();
 
-const app = express();
+// Connect Database
+connectDB();
 
+// Create HTTP server
 const server = http.createServer(app);
 
+// Socket.io
 const io = new Server(server, {
   cors: {
     origin: process.env.CLIENT_URL,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
-  }
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  },
 });
-
-connectDB();
-
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL
-  })
-);
-
-app.use(express.json());
-
-app.get("/", (req, res) => {
-  res.json({
-    message: "Collaborative Workspace API is running"
-  });
-});
-
-app.use("/api/auth", authRoutes);
-
-app.use("/api/workspaces", workspaceRoutes);
-
-/*
-  Socket.io
-*/
 
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
