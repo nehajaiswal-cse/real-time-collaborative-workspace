@@ -1,20 +1,62 @@
-import { useState } from "react";
-import { Box } from "@mui/material";
+import { useState, useEffect } from "react";
+
 import Navbar from "../components/dashboard/Navbar.jsx";
 import Sidebar from "../components/dashboard/Sidebar.jsx";
 import WelcomeHeader from "../components/dashboard/WelcomeHeader.jsx";
-import OverviewCard from "../components/dashboard/OverviewCard";
-
-import ViewKanbanIcon from "@mui/icons-material/ViewKanban";
-import AssignmentIcon from "@mui/icons-material/Assignment";
-import PeopleIcon from "@mui/icons-material/People";
+import OverviewCards from "../components/dashboard/OverviewCards.jsx";
+import BoardsSection from "../components/dashboard/BoardsSection.jsx";
+import RecentActivity from "../components/dashboard/RecentActivity";
+import { getDashboardData, getBoards } from "../api/dashboardApi";
 
 const Dashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [activities, setActivities] = useState([]);
+    const [boards, setBoards] = useState([]);
 
     const handleMenuClick = () => {
         setSidebarOpen((prev) => !prev);
     };
+
+
+    const handleCreateBoard = () => {
+        console.log("Create board clicked");
+    };
+
+    const handleViewAll = () => {
+        console.log("View all boards clicked");
+    };
+
+
+  // Boards Section
+    useEffect(() => {
+        const loadBoards = async () => {
+            try {
+                const data = await getBoards();
+                setBoards(data);
+            } catch (error) {
+                console.error("Failed to load boards:", error);
+            }
+        };
+
+        loadBoards();
+    }, []);
+
+
+    //  Recent Activity
+    useEffect(() => {
+        const loadDashboard = async () => {
+            try {
+                const data = await getDashboardData();
+
+                setActivities(data?.activities || []);
+            } catch (error) {
+                console.error("Failed to load dashboard:", error);
+                setActivities([]);
+            }
+        };
+
+        loadDashboard();
+    }, []);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -27,43 +69,25 @@ const Dashboard = () => {
                 <Sidebar open={sidebarOpen} />
 
                 {/* Main content */}
-                <main className="flex-1 p-6">
+                <main className="flex-1 p-6 min-w-0">
                     <WelcomeHeader userName="User" />
+
                     <h1 className="text-2xl font-bold text-gray-800">
                         Dashboard
                     </h1>
-                    
-                    <Box
-                        sx={{
-                            display: "grid",
-                            gridTemplateColumns: {
-                                xs: "1fr",
-                                sm: "repeat(2, 1fr)",
-                                lg: "repeat(3, 1fr)",
-                            },
-                            gap: 2,
-                        }}
-                    >
-                        <OverviewCard
-                            title="Total Boards"
-                            value={12}
-                            icon={<ViewKanbanIcon />}
-                        />
 
-                        <OverviewCard
-                            title="Total Cards"
-                            value={48}
-                            icon={<AssignmentIcon />}
-                        />
+                    {/* Overview */}
+                    <OverviewCards />
 
-                        <OverviewCard
-                            title="Members"
-                            value={8}
-                            icon={<PeopleIcon />}
-                        />
-                    </Box>
+                    {/* Boards */}
+                    <BoardsSection
+                        boards={boards}
+                        onCreateBoard={handleCreateBoard}
+                        onViewAll={handleViewAll}
+                    />
 
-                    {/* Your page content here */}
+                    {/* Recent Activity */}
+                    <RecentActivity activities={activities} />
                 </main>
             </div>
         </div>
