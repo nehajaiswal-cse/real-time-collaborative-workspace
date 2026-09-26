@@ -1,5 +1,5 @@
 import Board from "../models/board.js";
-import Workspace from "../models/workspace.js";
+import WorkspaceMember from "../models/workspaceMember.js";
 
 // Create Board
 export const createBoard = async (req, res) => {
@@ -12,20 +12,20 @@ export const createBoard = async (req, res) => {
       });
     }
 
-    // Check whether user is a member of the workspace
-    const workspace = await Workspace.findOne({
-      _id: workspaceId,
-      "members.user": req.user.id
+    // Check workspace membership
+    const membership = await WorkspaceMember.findOne({
+      workspace: workspaceId,
+      user: req.user.id
     });
 
-    if (!workspace) {
+    if (!membership) {
       return res.status(403).json({
         message: "You are not a member of this workspace"
       });
     }
 
     const board = await Board.create({
-      name,
+      name: name.trim(),
       workspace: workspaceId,
       createdBy: req.user.id
     });
@@ -54,12 +54,12 @@ export const getWorkspaceBoards = async (req, res) => {
     const { workspaceId } = req.params;
 
     // Check workspace membership
-    const workspace = await Workspace.findOne({
-      _id: workspaceId,
-      "members.user": req.user.id
+    const membership = await WorkspaceMember.findOne({
+      workspace: workspaceId,
+      user: req.user.id
     });
 
-    if (!workspace) {
+    if (!membership) {
       return res.status(403).json({
         message: "You are not a member of this workspace"
       });
@@ -99,13 +99,13 @@ export const getBoardById = async (req, res) => {
       });
     }
 
-    // Check whether user belongs to board's workspace
-    const workspace = await Workspace.findOne({
-      _id: board.workspace._id,
-      "members.user": req.user.id
+    // Check membership of board's workspace
+    const membership = await WorkspaceMember.findOne({
+      workspace: board.workspace._id,
+      user: req.user.id
     });
 
-    if (!workspace) {
+    if (!membership) {
       return res.status(403).json({
         message: "You are not a member of this workspace"
       });
@@ -145,12 +145,12 @@ export const updateBoard = async (req, res) => {
     }
 
     // Check workspace membership
-    const workspace = await Workspace.findOne({
-      _id: board.workspace,
-      "members.user": req.user.id
+    const membership = await WorkspaceMember.findOne({
+      workspace: board.workspace,
+      user: req.user.id
     });
 
-    if (!workspace) {
+    if (!membership) {
       return res.status(403).json({
         message: "You are not a member of this workspace"
       });
@@ -192,12 +192,12 @@ export const deleteBoard = async (req, res) => {
     }
 
     // Check workspace membership
-    const workspace = await Workspace.findOne({
-      _id: board.workspace,
-      "members.user": req.user.id
+    const membership = await WorkspaceMember.findOne({
+      workspace: board.workspace,
+      user: req.user.id
     });
 
-    if (!workspace) {
+    if (!membership) {
       return res.status(403).json({
         message: "You are not a member of this workspace"
       });
