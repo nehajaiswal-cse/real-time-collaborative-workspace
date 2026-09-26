@@ -33,6 +33,8 @@ const RecentActivity = ({ activities = [] }) => {
       }}
     >
       <CardContent sx={{ p: 3 }}>
+
+        {/* Header */}
         <Typography
           sx={{
             fontSize: "18px",
@@ -64,6 +66,7 @@ const RecentActivity = ({ activities = [] }) => {
           <Box>
             {activities.map((activity, index) => (
               <React.Fragment key={activity.id}>
+
                 <Box
                   sx={{
                     display: "flex",
@@ -72,6 +75,8 @@ const RecentActivity = ({ activities = [] }) => {
                     py: 1.5,
                   }}
                 >
+
+                  {/* User Avatar */}
                   <Avatar
                     src={activity.user?.avatar || ""}
                     alt={activity.user?.name || "User"}
@@ -80,13 +85,24 @@ const RecentActivity = ({ activities = [] }) => {
                       height: 40,
                       backgroundColor: "#F4ECE6",
                       color: "#A9744F",
+                      fontWeight: 600,
                     }}
                   >
                     {!activity.user?.avatar &&
-                      (activity.user?.name?.charAt(0)?.toUpperCase() || "U")}
+                      (
+                        activity.user?.name
+                          ?.charAt(0)
+                          ?.toUpperCase() || "U"
+                      )}
                   </Avatar>
 
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                  {/* Activity Details */}
+                  <Box
+                    sx={{
+                      flex: 1,
+                      minWidth: 0,
+                    }}
+                  >
                     <Typography
                       sx={{
                         fontSize: "14px",
@@ -99,6 +115,7 @@ const RecentActivity = ({ activities = [] }) => {
                       {activity.message}
                     </Typography>
 
+                    {/* Board */}
                     {activity.board?.name && (
                       <Typography
                         sx={{
@@ -111,6 +128,7 @@ const RecentActivity = ({ activities = [] }) => {
                       </Typography>
                     )}
 
+                    {/* Date */}
                     <Typography
                       sx={{
                         fontSize: "12px",
@@ -119,11 +137,14 @@ const RecentActivity = ({ activities = [] }) => {
                       }}
                     >
                       {activity.createdAt
-                        ? new Date(activity.createdAt).toLocaleString()
+                        ? new Date(
+                            activity.createdAt
+                          ).toLocaleString()
                         : ""}
                     </Typography>
                   </Box>
 
+                  {/* Activity Icon */}
                   <Box
                     sx={{
                       width: 38,
@@ -135,6 +156,13 @@ const RecentActivity = ({ activities = [] }) => {
                       alignItems: "center",
                       justifyContent: "center",
                       flexShrink: 0,
+
+                      transition: "all 0.2s ease",
+
+                      "&:hover": {
+                        backgroundColor: "#E8D8CC",
+                        color: "#8B5E3C",
+                      },
                     }}
                   >
                     {activityIcons[activity.type] || (
@@ -143,9 +171,15 @@ const RecentActivity = ({ activities = [] }) => {
                   </Box>
                 </Box>
 
+                {/* Divider */}
                 {index < activities.length - 1 && (
-                  <Divider sx={{ borderColor: "#EEE9E4" }} />
+                  <Divider
+                    sx={{
+                      borderColor: "#EEE9E4",
+                    }}
+                  />
                 )}
+
               </React.Fragment>
             ))}
           </Box>

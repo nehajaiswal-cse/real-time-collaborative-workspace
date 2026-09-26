@@ -9,7 +9,7 @@ const WelcomeHeader = ({ userName = "User" }) => {
   let icon;
 
   if (currentHour >= 5 && currentHour < 12) {
-    greeting = "Good morning";
+    greeting = "Good Morning";
     icon = (
       <WbSunnyOutlinedIcon
         sx={{
@@ -19,7 +19,7 @@ const WelcomeHeader = ({ userName = "User" }) => {
       />
     );
   } else if (currentHour >= 12 && currentHour < 18) {
-    greeting = "Good afternoon";
+    greeting = "Good Afternoon";
     icon = (
       <WbSunnyOutlinedIcon
         sx={{
@@ -30,8 +30,8 @@ const WelcomeHeader = ({ userName = "User" }) => {
     );
   } else {
     greeting = currentHour >= 18 && currentHour < 22
-      ? "Good evening"
-      : "Good night";
+      ? "Good Evening"
+      : "Good Night";
 
     icon = (
       <NightsStayOutlinedIcon
