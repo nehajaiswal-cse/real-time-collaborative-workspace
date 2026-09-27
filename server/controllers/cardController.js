@@ -3,6 +3,7 @@ import List from "../models/list.js";
 import Board from "../models/board.js";
 import WorkspaceMember from "../models/workspaceMember.js";
 import User from "../models/user.js";
+import { getIO } from "../socket.js";
 
 // Create Card
 export const createCard = async (req, res) => {
@@ -14,12 +15,12 @@ export const createCard = async (req, res) => {
       assignedTo,
       priority,
       position,
-      dueDate
+      dueDate,
     } = req.body;
 
     if (!title || !listId) {
       return res.status(400).json({
-        message: "Card title and list are required"
+        message: "Card title and list are required",
       });
     }
 
@@ -28,7 +29,7 @@ export const createCard = async (req, res) => {
 
     if (!list) {
       return res.status(404).json({
-        message: "List not found"
+        message: "List not found",
       });
     }
 
@@ -37,19 +38,19 @@ export const createCard = async (req, res) => {
 
     if (!board) {
       return res.status(404).json({
-        message: "Board not found"
+        message: "Board not found",
       });
     }
 
     // Check workspace membership
     const membership = await WorkspaceMember.findOne({
       workspace: board.workspace,
-      user: req.user.id
+      user: req.user.id,
     });
 
     if (!membership) {
       return res.status(403).json({
-        message: "You are not a member of this workspace"
+        message: "You are not a member of this workspace",
       });
     }
 
@@ -59,7 +60,7 @@ export const createCard = async (req, res) => {
 
       if (!assignedUser) {
         return res.status(404).json({
-          message: "Assigned user not found"
+          message: "Assigned user not found",
         });
       }
     }
@@ -72,7 +73,7 @@ export const createCard = async (req, res) => {
       createdBy: req.user.id,
       priority: priority || "medium",
       position: position ?? 0,
-      dueDate: dueDate || null
+      dueDate: dueDate || null,
     });
 
     const populatedCard = await Card.findById(card._id)
@@ -80,15 +81,19 @@ export const createCard = async (req, res) => {
       .populate("assignedTo", "name email")
       .populate("createdBy", "name email");
 
+    const io = getIO();
+
+    io.to(`workspace:${board.workspace}`).emit("card:created", populatedCard);
+
     res.status(201).json({
       message: "Card created successfully",
-      card: populatedCard
+      card: populatedCard,
     });
   } catch (error) {
     console.error("Create card error:", error);
 
     res.status(500).json({
-      message: "Server error"
+      message: "Server error",
     });
   }
 };
@@ -102,7 +107,7 @@ export const getListCards = async (req, res) => {
 
     if (!list) {
       return res.status(404).json({
-        message: "List not found"
+        message: "List not found",
       });
     }
 
@@ -110,36 +115,36 @@ export const getListCards = async (req, res) => {
 
     if (!board) {
       return res.status(404).json({
-        message: "Board not found"
+        message: "Board not found",
       });
     }
 
     const membership = await WorkspaceMember.findOne({
       workspace: board.workspace,
-      user: req.user.id
+      user: req.user.id,
     });
 
     if (!membership) {
       return res.status(403).json({
-        message: "You are not a member of this workspace"
+        message: "You are not a member of this workspace",
       });
     }
 
     const cards = await Card.find({
-      list: listId
+      list: listId,
     })
       .populate("assignedTo", "name email")
       .populate("createdBy", "name email")
       .sort({ position: 1, createdAt: 1 });
 
     res.json({
-      cards
+      cards,
     });
   } catch (error) {
     console.error("Get list cards error:", error);
 
     res.status(500).json({
-      message: "Server error"
+      message: "Server error",
     });
   }
 };
@@ -156,7 +161,7 @@ export const getCardById = async (req, res) => {
 
     if (!card) {
       return res.status(404).json({
-        message: "Card not found"
+        message: "Card not found",
       });
     }
 
@@ -164,29 +169,29 @@ export const getCardById = async (req, res) => {
 
     if (!board) {
       return res.status(404).json({
-        message: "Board not found"
+        message: "Board not found",
       });
     }
 
     const membership = await WorkspaceMember.findOne({
       workspace: board.workspace,
-      user: req.user.id
+      user: req.user.id,
     });
 
     if (!membership) {
       return res.status(403).json({
-        message: "You are not a member of this workspace"
+        message: "You are not a member of this workspace",
       });
     }
 
     res.json({
-      card
+      card,
     });
   } catch (error) {
     console.error("Get card error:", error);
 
     res.status(500).json({
-      message: "Server error"
+      message: "Server error",
     });
   }
 };
@@ -196,20 +201,14 @@ export const updateCard = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const {
-      title,
-      description,
-      assignedTo,
-      priority,
-      position,
-      dueDate
-    } = req.body;
+    const { title, description, assignedTo, priority, position, dueDate } =
+      req.body;
 
     const card = await Card.findById(id);
 
     if (!card) {
       return res.status(404).json({
-        message: "Card not found"
+        message: "Card not found",
       });
     }
 
@@ -217,7 +216,7 @@ export const updateCard = async (req, res) => {
 
     if (!list) {
       return res.status(404).json({
-        message: "List not found"
+        message: "List not found",
       });
     }
 
@@ -225,25 +224,25 @@ export const updateCard = async (req, res) => {
 
     if (!board) {
       return res.status(404).json({
-        message: "Board not found"
+        message: "Board not found",
       });
     }
 
     const membership = await WorkspaceMember.findOne({
       workspace: board.workspace,
-      user: req.user.id
+      user: req.user.id,
     });
 
     if (!membership) {
       return res.status(403).json({
-        message: "You are not a member of this workspace"
+        message: "You are not a member of this workspace",
       });
     }
 
     if (title !== undefined) {
       if (!title.trim()) {
         return res.status(400).json({
-          message: "Card title cannot be empty"
+          message: "Card title cannot be empty",
         });
       }
 
@@ -262,7 +261,7 @@ export const updateCard = async (req, res) => {
 
         if (!assignedUser) {
           return res.status(404).json({
-            message: "Assigned user not found"
+            message: "Assigned user not found",
           });
         }
 
@@ -273,7 +272,7 @@ export const updateCard = async (req, res) => {
     if (priority !== undefined) {
       if (!["low", "medium", "high"].includes(priority)) {
         return res.status(400).json({
-          message: "Invalid priority"
+          message: "Invalid priority",
         });
       }
 
@@ -295,15 +294,19 @@ export const updateCard = async (req, res) => {
       .populate("assignedTo", "name email")
       .populate("createdBy", "name email");
 
+    const io = getIO();
+
+    io.to(`workspace:${board.workspace}`).emit("card:updated", updatedCard);
+
     res.json({
       message: "Card updated successfully",
-      card: updatedCard
+      card: updatedCard,
     });
   } catch (error) {
     console.error("Update card error:", error);
 
     res.status(500).json({
-      message: "Server error"
+      message: "Server error",
     });
   }
 };
@@ -317,7 +320,7 @@ export const deleteCard = async (req, res) => {
 
     if (!card) {
       return res.status(404).json({
-        message: "Card not found"
+        message: "Card not found",
       });
     }
 
@@ -325,7 +328,7 @@ export const deleteCard = async (req, res) => {
 
     if (!list) {
       return res.status(404).json({
-        message: "List not found"
+        message: "List not found",
       });
     }
 
@@ -333,31 +336,35 @@ export const deleteCard = async (req, res) => {
 
     if (!board) {
       return res.status(404).json({
-        message: "Board not found"
+        message: "Board not found",
       });
     }
 
     const membership = await WorkspaceMember.findOne({
       workspace: board.workspace,
-      user: req.user.id
+      user: req.user.id,
     });
 
     if (!membership) {
       return res.status(403).json({
-        message: "You are not a member of this workspace"
+        message: "You are not a member of this workspace",
       });
     }
 
     await Card.findByIdAndDelete(id);
 
+    const io = getIO();
+
+    io.to(`workspace:${board.workspace}`).emit("card:deleted", id);
+
     res.json({
-      message: "Card deleted successfully"
+      message: "Card deleted successfully",
     });
   } catch (error) {
     console.error("Delete card error:", error);
 
     res.status(500).json({
-      message: "Server error"
+      message: "Server error",
     });
   }
 };
