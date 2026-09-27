@@ -3,6 +3,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import MyBoards from "./pages/MyBoards";
 
 const App = () => {
   return (
@@ -17,7 +18,8 @@ const App = () => {
         {/* ================= USER ROUTES ================= */}
 
        
-          <Route path="/user" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/myboards" element={<MyBoards/>} />
         
       </Routes>
 

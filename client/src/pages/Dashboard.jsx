@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 
-import Navbar from "../components/dashboard/Navbar.jsx";
-import Sidebar from "../components/dashboard/Sidebar.jsx";
+import { Box, Typography } from "@mui/material";
+
+import Navbar from "../components/common/Navbar.jsx";
+import Sidebar from "../components/common/Sidebar.jsx";
 import WelcomeHeader from "../components/dashboard/WelcomeHeader.jsx";
 import OverviewCards from "../components/dashboard/OverviewCards.jsx";
 import BoardsSection from "../components/dashboard/BoardsSection.jsx";
@@ -9,89 +11,112 @@ import RecentActivity from "../components/dashboard/RecentActivity";
 import { getDashboardData, getBoards } from "../api/dashboardApi";
 
 const Dashboard = () => {
-    const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [activities, setActivities] = useState([]);
-    const [boards, setBoards] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [activities, setActivities] = useState([]);
+  const [boards, setBoards] = useState([]);
 
-    const handleMenuClick = () => {
-        setSidebarOpen((prev) => !prev);
+  const handleMenuClick = () => {
+    setSidebarOpen((prev) => !prev);
+  };
+
+  const handleCreateBoard = () => {
+    console.log("Create board clicked");
+  };
+
+  const handleViewAll = () => {
+    console.log("View all boards clicked");
+  };
+
+  // Load Boards
+  useEffect(() => {
+    const loadBoards = async () => {
+      try {
+        const data = await getBoards();
+        setBoards(data);
+      } catch (error) {
+        console.error("Failed to load boards:", error);
+      }
     };
 
+    loadBoards();
+  }, []);
 
-    const handleCreateBoard = () => {
-        console.log("Create board clicked");
+  // Load Recent Activity
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const data = await getDashboardData();
+
+        setActivities(data?.activities || []);
+      } catch (error) {
+        console.error("Failed to load dashboard:", error);
+        setActivities([]);
+      }
     };
 
-    const handleViewAll = () => {
-        console.log("View all boards clicked");
-    };
+    loadDashboard();
+  }, []);
 
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        backgroundColor: "#f9fafb",
+      }}
+    >
+      {/* Fixed Navbar */}
+      <Navbar onMenuClick={handleMenuClick} />
 
-  // Boards Section
-    useEffect(() => {
-        const loadBoards = async () => {
-            try {
-                const data = await getBoards();
-                setBoards(data);
-            } catch (error) {
-                console.error("Failed to load boards:", error);
-            }
-        };
+      {/* Fixed Sidebar */}
+      <Sidebar open={sidebarOpen} />
 
-        loadBoards();
-    }, []);
+      {/* Main Content */}
+      <Box
+        component="main"
+        sx={{
+          p: 3,
 
+          mt: "72px",
 
-    //  Recent Activity
-    useEffect(() => {
-        const loadDashboard = async () => {
-            try {
-                const data = await getDashboardData();
+          ml: sidebarOpen ? "256px" : "72px",
 
-                setActivities(data?.activities || []);
-            } catch (error) {
-                console.error("Failed to load dashboard:", error);
-                setActivities([]);
-            }
-        };
+          height: "calc(100vh - 72px)",
 
-        loadDashboard();
-    }, []);
+          overflowY: "auto",
 
-    return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Navbar */}
-            <Navbar onMenuClick={handleMenuClick} />
+          transition: "margin-left 0.3s ease",
+        }}
+      >
+        <WelcomeHeader userName="User" />
 
-            {/* Main layout */}
-            <div className="flex">
-                {/* Sidebar */}
-                <Sidebar open={sidebarOpen} />
+        {/* Dashboard Heading */}
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: 700,
+            color: "#3F342C",
+            mb: 3,
+          }}
+        >
+          Dashboard
+        </Typography>
 
-                {/* Main content */}
-                <main className="flex-1 p-6 min-w-0">
-                    <WelcomeHeader userName="User" />
+        {/* Overview */}
+        <OverviewCards />
 
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        Dashboard
-                    </h1>
+        {/* Boards */}
+        <BoardsSection
+          boards={boards}
+          onCreateBoard={handleCreateBoard}
+          onViewAll={handleViewAll}
+        />
 
-                    {/* Overview */}
-                    <OverviewCards />
-
-                    {/* Boards */}
-                    <BoardsSection
-                        boards={boards}
-                        onCreateBoard={handleCreateBoard}
-                        onViewAll={handleViewAll}
-                    />
-
-                    {/* Recent Activity */}
-                    <RecentActivity activities={activities} />
-                </main>
-            </div>
-        </div>
-    );
+        {/* Recent Activity */}
+        <RecentActivity activities={activities} />
+      </Box>
+    </Box>
+  );
 };
 
 export default Dashboard;
+

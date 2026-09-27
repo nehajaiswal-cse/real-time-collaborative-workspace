@@ -4,22 +4,23 @@ const OverviewCard = ({ title, value, icon }) => {
   return (
     <Box
       sx={{
-        backgroundColor: "#FFFFFF",
+        bgcolor: "#FFFFFF",
         border: "1px solid #E8E3DE",
-        borderRadius: "14px",
-        padding: "20px",
+        borderRadius: 3.5,
+        p: 2.5,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         boxShadow: "0 2px 8px rgba(63, 52, 44, 0.04)",
       }}
     >
+      {/* Content */}
       <Box>
         <Typography
           sx={{
-            fontSize: "14px",
+            fontSize: 14,
             color: "#77716C",
-            marginBottom: "6px",
+            mb: 0.75,
           }}
         >
           {title}
@@ -27,7 +28,7 @@ const OverviewCard = ({ title, value, icon }) => {
 
         <Typography
           sx={{
-            fontSize: "28px",
+            fontSize: 28,
             fontWeight: 700,
             color: "#3F342C",
           }}
@@ -36,16 +37,18 @@ const OverviewCard = ({ title, value, icon }) => {
         </Typography>
       </Box>
 
+      {/* Icon */}
       <Box
         sx={{
           width: 48,
           height: 48,
-          borderRadius: "12px",
-          backgroundColor: "#F4ECE6",
+          borderRadius: 3,
+          bgcolor: "#F4ECE6",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           color: "#A9744F",
+          flexShrink: 0,
         }}
       >
         {icon}

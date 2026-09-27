@@ -1,5 +1,4 @@
-
-import { Box } from "@mui/material";
+import { Grid } from "@mui/material";
 
 import OverviewCard from "./OverviewCard";
 
@@ -9,35 +8,31 @@ import PeopleIcon from "@mui/icons-material/People";
 
 const OverviewCards = () => {
   return (
-    <Box
-      sx={{
-        display: "grid",
-        gridTemplateColumns: {
-          xs: "1fr",
-          sm: "repeat(2, 1fr)",
-          lg: "repeat(3, 1fr)",
-        },
-        gap: 2,
-      }}
-    >
-      <OverviewCard
-        title="Total Boards"
-        value={12}
-        icon={<ViewKanbanIcon />}
-      />
+    <Grid container spacing={2}>
+      <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+        <OverviewCard
+          title="Total Boards"
+          value={12}
+          icon={<ViewKanbanIcon />}
+        />
+      </Grid>
 
-      <OverviewCard
-        title="Total Cards"
-        value={48}
-        icon={<AssignmentIcon />}
-      />
+      <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+        <OverviewCard
+          title="Total Cards"
+          value={48}
+          icon={<AssignmentIcon />}
+        />
+      </Grid>
 
-      <OverviewCard
-        title="Members"
-        value={8}
-        icon={<PeopleIcon />}
-      />
-    </Box>
+      <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
+        <OverviewCard
+          title="Members"
+          value={8}
+          icon={<PeopleIcon />}
+        />
+      </Grid>
+    </Grid>
   );
 };
 
