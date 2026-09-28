@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import socket from "./socket";
 
 const API_URL = "http://localhost:5000/api";
@@ -12,6 +13,58 @@ function App() {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const handleDragEnd = async (result) => {
+  const { destination, source, draggableId } = result;
+
+  // Card kisi valid list me drop nahi hua
+  if (!destination) {
+    return;
+  }
+
+  // Same list aur same position
+  if (
+    destination.droppableId === source.droppableId &&
+    destination.index === source.index
+  ) {
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setError("Authentication token not found. Please login first.");
+      return;
+    }
+
+    const response = await fetch(
+      `${API_URL}/cards/${draggableId}/move`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          listId: destination.droppableId,
+          position: destination.index,
+        }),
+      },
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to move card");
+    }
+
+    console.log("CARD MOVED SUCCESSFULLY:", data.card);
+  } catch (error) {
+    console.error("Move card error:", error);
+    setError(error.message);
+  }
+};
 
   useEffect(() => {
     const fetchBoardData = async () => {
@@ -111,15 +164,26 @@ function App() {
       );
     };
 
+    const handleCardMoved = (movedCard) => {
+      console.log("REAL-TIME CARD MOVED:", movedCard);
+
+      setCards((previousCards) =>
+        previousCards.map((card) =>
+          card._id === movedCard._id ? movedCard : card,
+        ),
+      );
+    };
+
     socket.on("card:created", handleCardCreated);
     socket.on("card:updated", handleCardUpdated);
     socket.on("card:deleted", handleCardDeleted);
+    socket.on("card:moved", handleCardMoved);
 
     return () => {
       socket.off("card:created", handleCardCreated);
       socket.off("card:updated", handleCardUpdated);
       socket.off("card:deleted", handleCardDeleted);
-
+      socket.off("card:moved", handleCardMoved);
 
       socket.emit("workspace:leave", WORKSPACE_ID);
     };
@@ -143,39 +207,69 @@ function App() {
   }
 
   return (
-    <div style={styles.page}>
-      <h1>My Development Board</h1>
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <div style={styles.page}>
+        <h1>My Development Board</h1>
 
-      <div style={styles.board}>
-        {lists.map((list) => {
-          const listCards = cards.filter(
-            (card) =>
-              (typeof card.list === "string" ? card.list : card.list?._id) ===
-              list._id,
-          );
+        <div style={styles.board}>
+          {lists.map((list) => {
+            const listCards = cards.filter(
+              (card) =>
+                (typeof card.list === "string" ? card.list : card.list?._id) ===
+                list._id,
+            );
 
-          return (
-            <div key={list._id} style={styles.list}>
-              <h2>{list.name}</h2>
+            return (
+              <Droppable droppableId={list._id}>
+                {(provided) => (
+                  <div
+                    key={list._id}
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    style={styles.list}
+                  >
+                    <h2>{list.name}</h2>
 
-              {listCards.length === 0 ? (
-                <p style={styles.empty}>No cards</p>
-              ) : (
-                listCards.map((card) => (
-                  <div key={card._id} style={styles.card}>
-                    <h3>{card.title}</h3>
+                    {listCards.length === 0 ? (
+                      <p style={styles.empty}>No cards</p>
+                    ) : (
+                      listCards.map((card, index) => (
+                        <Draggable
+                          key={card._id}
+                          draggableId={card._id}
+                          index={index}
+                        >
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              style={{
+                                ...styles.card,
+                                ...provided.draggableProps.style,
+                                opacity: snapshot.isDragging ? 0.7 : 1,
+                              }}
+                            >
+                              <h3>{card.title}</h3>
 
-                    {card.description && <p>{card.description}</p>}
+                              {card.description && <p>{card.description}</p>}
 
-                    <span>Priority: {card.priority}</span>
+                              <span>Priority: {card.priority}</span>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))
+                    )}
+
+                    {provided.placeholder}
                   </div>
-                ))
-              )}
-            </div>
-          );
-        })}
+                )}
+              </Droppable>
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </DragDropContext>
   );
 }
 

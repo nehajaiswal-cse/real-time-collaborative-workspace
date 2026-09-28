@@ -368,3 +368,106 @@ export const deleteCard = async (req, res) => {
     });
   }
 };
+
+// Move Card to another List
+export const moveCard = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { listId, position } = req.body;
+
+    if (!listId) {
+      return res.status(400).json({
+        message: "New list is required",
+      });
+    }
+
+    // Find card
+    const card = await Card.findById(id);
+
+    if (!card) {
+      return res.status(404).json({
+        message: "Card not found",
+      });
+    }
+
+    // Find old list
+    const oldList = await List.findById(card.list);
+
+    if (!oldList) {
+      return res.status(404).json({
+        message: "Current list not found",
+      });
+    }
+
+    // Find board
+    const board = await Board.findById(oldList.board);
+
+    if (!board) {
+      return res.status(404).json({
+        message: "Board not found",
+      });
+    }
+
+    // Check workspace membership
+    const membership = await WorkspaceMember.findOne({
+      workspace: board.workspace,
+      user: req.user.id,
+    });
+
+    if (!membership) {
+      return res.status(403).json({
+        message: "You are not a member of this workspace",
+      });
+    }
+
+    // Find new list
+    const newList = await List.findById(listId);
+
+    if (!newList) {
+      return res.status(404).json({
+        message: "New list not found",
+      });
+    }
+
+    // Make sure new list belongs to the same board
+    if (newList.board.toString() !== board._id.toString()) {
+      return res.status(400).json({
+        message: "Card can only be moved within the same board",
+      });
+    }
+
+    // Update card
+    card.list = newList._id;
+
+    if (position !== undefined) {
+      card.position = position;
+    }
+
+    await card.save();
+
+    // Populate updated card
+    const movedCard = await Card.findById(card._id)
+      .populate("list", "name")
+      .populate("assignedTo", "name email")
+      .populate("createdBy", "name email");
+
+    // Emit real-time event
+    const io = getIO();
+
+    io.to(`workspace:${board.workspace}`).emit(
+      "card:moved",
+      movedCard
+    );
+
+    res.json({
+      message: "Card moved successfully",
+      card: movedCard,
+    });
+  } catch (error) {
+    console.error("Move card error:", error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};

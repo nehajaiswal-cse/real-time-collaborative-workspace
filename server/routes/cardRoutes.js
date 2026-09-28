@@ -5,7 +5,8 @@ import {
   getListCards,
   getCardById,
   updateCard,
-  deleteCard
+  deleteCard,
+  moveCard
 } from "../controllers/cardController.js";
 
 import authMiddleware from "../middleware/authmiddleware.js";
@@ -18,6 +19,8 @@ router.post("/", createCard);
 router.get("/list/:listId", getListCards);
 router.get("/:id", getCardById);
 router.put("/:id", updateCard);
+router.put("/:id/move", moveCard);
 router.delete("/:id", deleteCard);
+
 
 export default router;
