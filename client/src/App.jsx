@@ -4,7 +4,7 @@ import Home from "./pages/Home.jsx";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import MyBoards from "./pages/MyBoards";
-import Settings from "./src/pages/Settings";
+import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 
 const App = () => {

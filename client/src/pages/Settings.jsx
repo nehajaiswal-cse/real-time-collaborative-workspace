@@ -203,7 +203,7 @@ const Settings = () => {
           sx={{
             borderRadius: 3,
             backgroundColor: "#FFFFFF",
-            border: "1px solid #E5E7EB",
+            border: "1px solid #EFE9E4",
             mb: 3,
           }}
         >
@@ -219,13 +219,13 @@ const Settings = () => {
                 fontWeight: 600,
                 fontSize: "0.95rem",
                 minHeight: 52,
-                color: "#64748B",
+                color: "#786C62",
                 "&.Mui-selected": {
-                  color: "#6366F1",
+                  color: "#A9744F",
                 },
               },
               "& .MuiTabs-indicator": {
-                backgroundColor: "#6366F1",
+                backgroundColor: "#A9744F",
                 height: 3,
                 borderRadius: "3px 3px 0 0",
               },
@@ -246,7 +246,7 @@ const Settings = () => {
               p: { xs: 2.5, sm: 4 },
               borderRadius: 3,
               backgroundColor: "#FFFFFF",
-              border: "1px solid #E5E7EB",
+              border: "1px solid #EFE9E4",
             }}
           >
             <Typography variant="h6" sx={{ fontWeight: 700, color: "#3F342C", mb: 3 }}>
@@ -262,16 +262,17 @@ const Settings = () => {
                   gap: 3,
                   mb: 4,
                   pb: 3,
-                  borderBottom: "1px solid #F1F5F9",
+                  borderBottom: "1px solid #F7F2EE",
                 }}
               >
                 <Avatar
                   sx={{
                     width: 80,
                     height: 80,
-                    bgcolor: "#6366F1",
+                    bgcolor: "#A9744F",
                     fontSize: "1.75rem",
                     fontWeight: 700,
+                    boxShadow: "0 4px 14px rgba(169, 116, 79, 0.25)",
                   }}
                 >
                   {profile.name ? profile.name.charAt(0) : "A"}
@@ -284,10 +285,12 @@ const Settings = () => {
                       size="small"
                       startIcon={<UploadIcon />}
                       sx={{
-                        borderColor: "#E5E7EB",
+                        borderColor: "#EFE9E4",
                         color: "#3F342C",
                         textTransform: "none",
-                        "&:hover": { borderColor: "#CBD5E1", backgroundColor: "#F8FAFC" },
+                        borderRadius: "8px",
+                        fontWeight: 600,
+                        "&:hover": { borderColor: "#A9744F", backgroundColor: "rgba(169, 116, 79, 0.06)" },
                       }}
                     >
                       Change Photo
@@ -296,7 +299,7 @@ const Settings = () => {
                       variant="text"
                       size="small"
                       color="error"
-                      sx={{ textTransform: "none" }}
+                      sx={{ textTransform: "none", fontWeight: 600 }}
                       onClick={() =>
                         setSnackbar({
                           open: true,
@@ -308,7 +311,7 @@ const Settings = () => {
                       Remove
                     </Button>
                   </Box>
-                  <Typography variant="caption" sx={{ color: '#94A3B8' }}>
+                  <Typography variant="caption" sx={{ color: '#786C62' }}>
                     Recommended format: JPG or PNG (Max 2MB)
                   </Typography>
                 </Box>
@@ -317,7 +320,7 @@ const Settings = () => {
               {/* Form Input Fields */}
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mb: 0.75 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#3F342C", mb: 0.75 }}>
                     Full Name
                   </Typography>
                   <TextField
@@ -326,11 +329,16 @@ const Settings = () => {
                     name="name"
                     value={profile.name}
                     onChange={handleProfileChange}
+                    sx={{
+                      "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#A9744F",
+                      },
+                    }}
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mb: 0.75 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#3F342C", mb: 0.75 }}>
                     Email Address
                   </Typography>
                   <TextField
@@ -340,11 +348,16 @@ const Settings = () => {
                     type="email"
                     value={profile.email}
                     onChange={handleProfileChange}
+                    sx={{
+                      "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#A9744F",
+                      },
+                    }}
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mb: 0.75 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#3F342C", mb: 0.75 }}>
                     Role / Job Title
                   </Typography>
                   <TextField
@@ -353,11 +366,16 @@ const Settings = () => {
                     name="role"
                     value={profile.role}
                     onChange={handleProfileChange}
+                    sx={{
+                      "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#A9744F",
+                      },
+                    }}
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mb: 0.75 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#3F342C", mb: 0.75 }}>
                     Language
                   </Typography>
                   <FormControl fullWidth size="small">
@@ -365,6 +383,11 @@ const Settings = () => {
                       name="language"
                       value={profile.language}
                       onChange={handleProfileChange}
+                      sx={{
+                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#A9744F",
+                        },
+                      }}
                     >
                       <MenuItem value="en">English (US)</MenuItem>
                       <MenuItem value="es">Spanish</MenuItem>
@@ -375,7 +398,7 @@ const Settings = () => {
                 </Grid>
 
                 <Grid item xs={12}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mb: 0.75 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#3F342C", mb: 0.75 }}>
                     Bio
                   </Typography>
                   <TextField
@@ -386,6 +409,11 @@ const Settings = () => {
                     value={profile.bio}
                     onChange={handleProfileChange}
                     placeholder="Tell your team a little about yourself..."
+                    sx={{
+                      "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#A9744F",
+                      },
+                    }}
                   />
                 </Grid>
 
@@ -395,11 +423,18 @@ const Settings = () => {
                     variant="contained"
                     startIcon={<SaveIcon />}
                     sx={{
-                      backgroundColor: "#6366F1",
+                      background: "linear-gradient(135deg, #A9744F, #8B5E3C)",
                       color: "#FFFFFF",
                       fontWeight: 700,
                       px: 3,
-                      "&:hover": { backgroundColor: "#4F46E5" },
+                      py: 1,
+                      borderRadius: "10px",
+                      boxShadow: "0 4px 12px rgba(169, 116, 79, 0.25)",
+                      textTransform: "none",
+                      "&:hover": {
+                        background: "linear-gradient(135deg, #966541, #7A5133)",
+                        boxShadow: "0 6px 16px rgba(169, 116, 79, 0.35)",
+                      },
                     }}
                   >
                     Save Changes
@@ -418,7 +453,7 @@ const Settings = () => {
               p: { xs: 2.5, sm: 4 },
               borderRadius: 3,
               backgroundColor: "#FFFFFF",
-              border: "1px solid #E5E7EB",
+              border: "1px solid #EFE9E4",
             }}
           >
             <Typography variant="h6" sx={{ fontWeight: 700, color: "#3F342C", mb: 3 }}>
@@ -428,7 +463,7 @@ const Settings = () => {
             <Box component="form" onSubmit={handleUpdatePassword}>
               <Grid container spacing={3} maxWidth="md">
                 <Grid item xs={12}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mb: 0.75 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#3F342C", mb: 0.75 }}>
                     Current Password
                   </Typography>
                   <TextField
@@ -438,6 +473,11 @@ const Settings = () => {
                     type={showCurrentPassword ? "text" : "password"}
                     value={security.currentPassword}
                     onChange={handleSecurityChange}
+                    sx={{
+                      "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#A9744F",
+                      },
+                    }}
                     InputProps={{
                       endAdornment: (
                         <IconButton
@@ -453,7 +493,7 @@ const Settings = () => {
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mb: 0.75 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#3F342C", mb: 0.75 }}>
                     New Password
                   </Typography>
                   <TextField
@@ -463,6 +503,11 @@ const Settings = () => {
                     type={showNewPassword ? "text" : "password"}
                     value={security.newPassword}
                     onChange={handleSecurityChange}
+                    sx={{
+                      "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#A9744F",
+                      },
+                    }}
                     InputProps={{
                       endAdornment: (
                         <IconButton
@@ -478,7 +523,7 @@ const Settings = () => {
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mb: 0.75 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#3F342C", mb: 0.75 }}>
                     Confirm New Password
                   </Typography>
                   <TextField
@@ -488,6 +533,11 @@ const Settings = () => {
                     type="password"
                     value={security.confirmPassword}
                     onChange={handleSecurityChange}
+                    sx={{
+                      "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#A9744F",
+                      },
+                    }}
                   />
                 </Grid>
 
@@ -497,11 +547,18 @@ const Settings = () => {
                     variant="contained"
                     startIcon={<LockIcon />}
                     sx={{
-                      backgroundColor: "#6366F1",
+                      background: "linear-gradient(135deg, #A9744F, #8B5E3C)",
                       color: "#FFFFFF",
                       fontWeight: 700,
                       px: 3,
-                      "&:hover": { backgroundColor: "#4F46E5" },
+                      py: 1,
+                      borderRadius: "10px",
+                      boxShadow: "0 4px 12px rgba(169, 116, 79, 0.25)",
+                      textTransform: "none",
+                      "&:hover": {
+                        background: "linear-gradient(135deg, #966541, #7A5133)",
+                        boxShadow: "0 6px 16px rgba(169, 116, 79, 0.35)",
+                      },
                     }}
                   >
                     Update Password
@@ -510,13 +567,13 @@ const Settings = () => {
               </Grid>
             </Box>
 
-            <Divider sx={{ my: 4 }} />
+            <Divider sx={{ my: 4, borderColor: "#EFE9E4" }} />
 
             {/* Two Factor Authentication */}
             <Typography variant="h6" sx={{ fontWeight: 700, color: "#3F342C", mb: 1 }}>
               Two-Factor Authentication (2FA)
             </Typography>
-            <Typography variant="body2" sx={{ color: "#64748B", mb: 2 }}>
+            <Typography variant="body2" sx={{ color: "#786C62", mb: 2 }}>
               Add an extra layer of security to your account using an authenticator app.
             </Typography>
             <FormControlLabel
@@ -529,7 +586,14 @@ const Settings = () => {
                       twoFactorEnabled: !prev.twoFactorEnabled,
                     }))
                   }
-                  color="primary"
+                  sx={{
+                    "& .MuiSwitch-switchBase.Mui-checked": {
+                      color: "#A9744F",
+                    },
+                    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                      backgroundColor: "#A9744F",
+                    },
+                  }}
                 />
               }
               label={
@@ -566,7 +630,10 @@ const Settings = () => {
                     <Switch
                       checked={notifications.emailUpdates}
                       onChange={() => handleNotificationToggle("emailUpdates")}
-                      color="primary"
+                      sx={{
+                        "& .MuiSwitch-switchBase.Mui-checked": { color: "#A9744F" },
+                        "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "#A9744F" },
+                      }}
                     />
                   }
                   label={
@@ -574,7 +641,7 @@ const Settings = () => {
                       <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#3F342C" }}>
                         Email Notifications
                       </Typography>
-                      <Typography variant="caption" sx={{ color: "#64748B" }}>
+                      <Typography variant="caption" sx={{ color: "#786C62" }}>
                         Receive weekly digest and project status emails.
                       </Typography>
                     </Box>
@@ -588,7 +655,10 @@ const Settings = () => {
                     <Switch
                       checked={notifications.boardActivity}
                       onChange={() => handleNotificationToggle("boardActivity")}
-                      color="primary"
+                      sx={{
+                        "& .MuiSwitch-switchBase.Mui-checked": { color: "#A9744F" },
+                        "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "#A9744F" },
+                      }}
                     />
                   }
                   label={
@@ -596,7 +666,7 @@ const Settings = () => {
                       <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#3F342C" }}>
                         Board Activity Alerts
                       </Typography>
-                      <Typography variant="caption" sx={{ color: "#64748B" }}>
+                      <Typography variant="caption" sx={{ color: "#786C62" }}>
                         Get notified when a team member modifies or comments on your board.
                       </Typography>
                     </Box>
@@ -610,7 +680,10 @@ const Settings = () => {
                     <Switch
                       checked={notifications.mentions}
                       onChange={() => handleNotificationToggle("mentions")}
-                      color="primary"
+                      sx={{
+                        "& .MuiSwitch-switchBase.Mui-checked": { color: "#A9744F" },
+                        "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "#A9744F" },
+                      }}
                     />
                   }
                   label={
@@ -618,7 +691,7 @@ const Settings = () => {
                       <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#3F342C" }}>
                         @Mentions & Direct Messages
                       </Typography>
-                      <Typography variant="caption" sx={{ color: "#64748B" }}>
+                      <Typography variant="caption" sx={{ color: "#786C62" }}>
                         Instant alerts when someone tags you in a card or comment.
                       </Typography>
                     </Box>
@@ -637,7 +710,7 @@ const Settings = () => {
               p: { xs: 2.5, sm: 4 },
               borderRadius: 3,
               backgroundColor: "#FFFFFF",
-              border: "1px solid #E5E7EB",
+              border: "1px solid #EFE9E4",
             }}
           >
             <Typography variant="h6" sx={{ fontWeight: 700, color: "#3F342C", mb: 3 }}>
@@ -646,7 +719,7 @@ const Settings = () => {
 
             <Grid container spacing={3} maxWidth="md">
               <Grid item xs={12} sm={6}>
-                <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mb: 0.75 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: "#3F342C", mb: 0.75 }}>
                   Theme Appearance
                 </Typography>
                 <FormControl fullWidth size="small">
@@ -655,6 +728,11 @@ const Settings = () => {
                     onChange={(e) =>
                       setPreferences((prev) => ({ ...prev, theme: e.target.value }))
                     }
+                    sx={{
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#A9744F",
+                      },
+                    }}
                   >
                     <MenuItem value="light">Light Mode (Default)</MenuItem>
                     <MenuItem value="dark">Dark Mode</MenuItem>
@@ -669,7 +747,10 @@ const Settings = () => {
                     <Switch
                       checked={preferences.autoSave}
                       onChange={() => handlePreferenceToggle("autoSave")}
-                      color="primary"
+                      sx={{
+                        "& .MuiSwitch-switchBase.Mui-checked": { color: "#A9744F" },
+                        "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "#A9744F" },
+                      }}
                     />
                   }
                   label={
@@ -677,7 +758,7 @@ const Settings = () => {
                       <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#3F342C" }}>
                         Real-time Auto-Save
                       </Typography>
-                      <Typography variant="caption" sx={{ color: "#64748B" }}>
+                      <Typography variant="caption" sx={{ color: "#786C62" }}>
                         Automatically save board and canvas changes as you type.
                       </Typography>
                     </Box>

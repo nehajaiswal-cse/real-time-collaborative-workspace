@@ -149,10 +149,10 @@ const Profile = () => {
 
   // Mock User Stats
   const stats = [
-    { label: "Created Boards", count: "14", icon: <BoardIcon />, color: "#6366F1", bg: "#EEF2FF" },
+    { label: "Created Boards", count: "14", icon: <BoardIcon />, color: "#A9744F", bg: "rgba(169, 116, 79, 0.12)" },
     { label: "Collaborators", count: "32", icon: <TeamIcon />, color: "#10B981", bg: "#ECFDF5" },
-    { label: "Tasks Completed", count: "128", icon: <TaskIcon />, color: "#F59E0B", bg: "#FEF3C7" },
-    { label: "Contribution Score", count: "96%", icon: <ScoreIcon />, color: "#EC4899", bg: "#FDF2F8" },
+    { label: "Tasks Completed", count: "128", icon: <TaskIcon />, color: "#D97706", bg: "#FEF3C7" },
+    { label: "Contribution Score", count: "96%", icon: <ScoreIcon />, color: "#8B5E3C", bg: "#F7F2EE" },
   ];
 
   // Mock Recent User Activity
@@ -208,7 +208,7 @@ const Profile = () => {
             borderRadius: 4,
             overflow: "hidden",
             backgroundColor: "#FFFFFF",
-            border: "1px solid #E5E7EB",
+            border: "1px solid #EFE9E4",
             mb: 3,
           }}
         >
@@ -216,7 +216,7 @@ const Profile = () => {
           <Box
             sx={{
               height: { xs: 120, sm: 180 },
-              background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%)",
+              background: "linear-gradient(135deg, #A9744F 0%, #C48B63 50%, #8B5E3C 100%)",
               position: "relative",
             }}
           />
@@ -241,8 +241,8 @@ const Profile = () => {
                     width: { xs: 90, sm: 110 },
                     height: { xs: 90, sm: 110 },
                     border: "4px solid #FFFFFF",
-                    boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
-                    bgcolor: "#6366F1",
+                    boxShadow: "0 8px 20px rgba(169, 116, 79, 0.25)",
+                    bgcolor: "#A9744F",
                     fontSize: "2.25rem",
                     fontWeight: 700,
                   }}
@@ -267,13 +267,17 @@ const Profile = () => {
                   startIcon={<EditIcon />}
                   onClick={handleOpenEditDialog}
                   sx={{
-                    backgroundColor: "#6366F1",
+                    background: "linear-gradient(135deg, #A9744F, #8B5E3C)",
                     color: "#FFFFFF",
                     fontWeight: 700,
                     borderRadius: 2.5,
                     textTransform: "none",
                     px: 2.5,
-                    "&:hover": { backgroundColor: "#4F46E5" },
+                    boxShadow: "0 4px 14px rgba(169, 116, 79, 0.25)",
+                    "&:hover": {
+                      background: "linear-gradient(135deg, #966541, #7A5133)",
+                      boxShadow: "0 6px 18px rgba(169, 116, 79, 0.35)",
+                    },
                   }}
                 >
                   Edit Profile
@@ -283,11 +287,12 @@ const Profile = () => {
                   startIcon={<ShareIcon />}
                   onClick={handleShareProfile}
                   sx={{
-                    borderColor: "#E5E7EB",
+                    borderColor: "#EFE9E4",
                     color: "#3F342C",
                     borderRadius: 2.5,
+                    fontWeight: 600,
                     textTransform: "none",
-                    "&:hover": { borderColor: "#CBD5E1", backgroundColor: "#F8FAFC" },
+                    "&:hover": { borderColor: "#A9744F", backgroundColor: "rgba(169, 116, 79, 0.06)" },
                   }}
                 >
                   Share
@@ -300,7 +305,7 @@ const Profile = () => {
               <Typography variant="h5" sx={{ fontWeight: 800, color: "#3F342C" }}>
                 {userProfile.name}
               </Typography>
-              <Typography variant="subtitle2" sx={{ color: "#64748B" }}>
+              <Typography variant="subtitle2" sx={{ color: "#786C62" }}>
                 {userProfile.role}
               </Typography>
             </Box>
@@ -312,21 +317,21 @@ const Profile = () => {
                 flexWrap: "wrap",
                 gap: { xs: 2, sm: 3 },
                 alignItems: "center",
-                color: "#64748B",
+                color: "#786C62",
                 fontSize: "0.875rem",
                 pt: 1,
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <EmailIcon fontSize="small" sx={{ color: "#6366F1" }} />
+                <EmailIcon fontSize="small" sx={{ color: "#A9744F" }} />
                 <Typography variant="body2">{userProfile.email}</Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <LocationIcon fontSize="small" sx={{ color: "#6366F1" }} />
+                <LocationIcon fontSize="small" sx={{ color: "#A9744F" }} />
                 <Typography variant="body2">{userProfile.location}</Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <CalendarIcon fontSize="small" sx={{ color: "#6366F1" }} />
+                <CalendarIcon fontSize="small" sx={{ color: "#A9744F" }} />
                 <Typography variant="body2">Joined {userProfile.joinedDate}</Typography>
               </Box>
             </Box>
@@ -343,14 +348,14 @@ const Profile = () => {
                   p: 2.5,
                   borderRadius: 3,
                   backgroundColor: "#FFFFFF",
-                  border: "1px solid #E5E7EB",
+                  border: "1px solid #EFE9E4",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
                 }}
               >
                 <Box>
-                  <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>
+                  <Typography variant="caption" sx={{ color: "#786C62", fontWeight: 600 }}>
                     {stat.label}
                   </Typography>
                   <Typography variant="h4" sx={{ fontWeight: 800, color: "#3F342C", mt: 0.5 }}>
@@ -382,7 +387,7 @@ const Profile = () => {
           sx={{
             borderRadius: 3,
             backgroundColor: "#FFFFFF",
-            border: "1px solid #E5E7EB",
+            border: "1px solid #EFE9E4",
             mb: 3,
           }}
         >
@@ -398,13 +403,13 @@ const Profile = () => {
                 fontWeight: 600,
                 fontSize: "0.95rem",
                 minHeight: 52,
-                color: "#64748B",
+                color: "#786C62",
                 "&.Mui-selected": {
-                  color: "#6366F1",
+                  color: "#A9744F",
                 },
               },
               "& .MuiTabs-indicator": {
-                backgroundColor: "#6366F1",
+                backgroundColor: "#A9744F",
                 height: 3,
                 borderRadius: "3px 3px 0 0",
               },
@@ -427,7 +432,7 @@ const Profile = () => {
                   p: { xs: 2.5, sm: 3.5 },
                   borderRadius: 3,
                   backgroundColor: "#FFFFFF",
-                  border: "1px solid #E5E7EB",
+                  border: "1px solid #EFE9E4",
                   mb: 3,
                 }}
               >
@@ -447,8 +452,9 @@ const Profile = () => {
                       key={skill}
                       label={skill}
                       sx={{
-                        backgroundColor: "#EEF2FF",
-                        color: "#6366F1",
+                        backgroundColor: "#F7F2EE",
+                        color: "#A9744F",
+                        border: "1px solid #EFE9E4",
                         fontWeight: 600,
                         fontSize: "0.85rem",
                         borderRadius: 2,
@@ -468,7 +474,7 @@ const Profile = () => {
                   p: { xs: 2.5, sm: 3.5 },
                   borderRadius: 3,
                   backgroundColor: "#FFFFFF",
-                  border: "1px solid #E5E7EB",
+                  border: "1px solid #EFE9E4",
                 }}
               >
                 <Typography variant="h6" sx={{ fontWeight: 700, color: "#3F342C", mb: 2.5 }}>
@@ -481,7 +487,7 @@ const Profile = () => {
                       <GitHubIcon fontSize="small" />
                     </Avatar>
                     <Box sx={{ overflow: "hidden" }}>
-                      <Typography variant="caption" sx={{ color: "#64748B", display: "block" }}>
+                      <Typography variant="caption" sx={{ color: "#786C62", display: "block" }}>
                         GitHub Profile
                       </Typography>
                       <Typography
@@ -490,7 +496,7 @@ const Profile = () => {
                         target="_blank"
                         rel="noreferrer"
                         variant="body2"
-                        sx={{ color: "#6366F1", fontWeight: 600, textDecoration: "none" }}
+                        sx={{ color: "#A9744F", fontWeight: 600, textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
                       >
                         {userProfile.github.replace("https://", "")}
                       </Typography>
@@ -498,11 +504,11 @@ const Profile = () => {
                   </Box>
 
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                    <Avatar sx={{ bgcolor: "#EFF6FF", color: "#0077B5", width: 36, height: 36 }}>
+                    <Avatar sx={{ bgcolor: "#F7F2EE", color: "#A9744F", width: 36, height: 36 }}>
                       <LinkedInIcon fontSize="small" />
                     </Avatar>
                     <Box sx={{ overflow: "hidden" }}>
-                      <Typography variant="caption" sx={{ color: "#64748B", display: "block" }}>
+                      <Typography variant="caption" sx={{ color: "#786C62", display: "block" }}>
                         LinkedIn Profile
                       </Typography>
                       <Typography
@@ -511,7 +517,7 @@ const Profile = () => {
                         target="_blank"
                         rel="noreferrer"
                         variant="body2"
-                        sx={{ color: "#6366F1", fontWeight: 600, textDecoration: "none" }}
+                        sx={{ color: "#A9744F", fontWeight: 600, textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
                       >
                         {userProfile.linkedin.replace("https://", "")}
                       </Typography>
@@ -523,7 +529,7 @@ const Profile = () => {
                       <WebsiteIcon fontSize="small" />
                     </Avatar>
                     <Box sx={{ overflow: "hidden" }}>
-                      <Typography variant="caption" sx={{ color: "#64748B", display: "block" }}>
+                      <Typography variant="caption" sx={{ color: "#786C62", display: "block" }}>
                         Personal Portfolio
                       </Typography>
                       <Typography
@@ -532,7 +538,7 @@ const Profile = () => {
                         target="_blank"
                         rel="noreferrer"
                         variant="body2"
-                        sx={{ color: "#6366F1", fontWeight: 600, textDecoration: "none" }}
+                        sx={{ color: "#A9744F", fontWeight: 600, textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
                       >
                         {userProfile.website.replace("https://", "")}
                       </Typography>
@@ -555,12 +561,12 @@ const Profile = () => {
                     p: 3,
                     borderRadius: 3,
                     backgroundColor: "#FFFFFF",
-                    border: "1px solid #E5E7EB",
+                    border: "1px solid #EFE9E4",
                     transition: "all 0.2s ease",
                     cursor: "pointer",
                     "&:hover": {
-                      borderColor: "#A5B4FC",
-                      boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
+                      borderColor: "#A9744F",
+                      boxShadow: "0 10px 25px -5px rgba(169, 116, 79, 0.15)",
                       transform: "translateY(-2px)",
                     },
                   }}
@@ -569,14 +575,14 @@ const Profile = () => {
                     <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#3F342C" }}>
                       {board.title}
                     </Typography>
-                    <Chip label={board.category} size="small" sx={{ backgroundColor: "#EEF2FF", color: "#6366F1", fontWeight: 600 }} />
+                    <Chip label={board.category} size="small" sx={{ backgroundColor: "#F7F2EE", color: "#A9744F", border: "1px solid #EFE9E4", fontWeight: 600 }} />
                   </Box>
 
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 3 }}>
-                    <Typography variant="caption" sx={{ color: "#64748B", fontWeight: 600 }}>
+                    <Typography variant="caption" sx={{ color: "#786C62", fontWeight: 600 }}>
                       {board.members} team members
                     </Typography>
-                    <Typography variant="caption" sx={{ color: "#94A3B8" }}>
+                    <Typography variant="caption" sx={{ color: "#786C62" }}>
                       Updated {board.updated}
                     </Typography>
                   </Box>
@@ -594,7 +600,7 @@ const Profile = () => {
               p: { xs: 2.5, sm: 3.5 },
               borderRadius: 3,
               backgroundColor: "#FFFFFF",
-              border: "1px solid #E5E7EB",
+              border: "1px solid #EFE9E4",
             }}
           >
             <Typography variant="h6" sx={{ fontWeight: 700, color: "#3F342C", mb: 3 }}>
@@ -610,11 +616,11 @@ const Profile = () => {
                     alignItems: "flex-start",
                     gap: 2,
                     pb: 2,
-                    borderBottom: "1px solid #F1F5F9",
+                    borderBottom: "1px solid #F7F2EE",
                     "&:last-child": { borderBottom: "none", pb: 0 },
                   }}
                 >
-                  <Avatar sx={{ width: 36, height: 36, bgcolor: "#EEF2FF", color: "#6366F1", fontSize: "0.85rem" }}>
+                  <Avatar sx={{ width: 36, height: 36, bgcolor: "#F7F2EE", color: "#A9744F", fontSize: "0.85rem" }}>
                     <TimeIcon fontSize="small" />
                   </Avatar>
                   <Box>
@@ -624,7 +630,7 @@ const Profile = () => {
                       </Typography>{" "}
                       {act.target}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: "#94A3B8" }}>
+                    <Typography variant="caption" sx={{ color: "#786C62" }}>
                       {act.time}
                     </Typography>
                   </Box>
@@ -648,10 +654,10 @@ const Profile = () => {
         <DialogTitle sx={{ fontWeight: 800, color: "#3F342C" }}>
           Edit Profile Information
         </DialogTitle>
-        <DialogContent dividers sx={{ borderBottom: "1px solid #F1F5F9", borderTop: "1px solid #F1F5F9" }}>
+        <DialogContent dividers sx={{ borderBottom: "1px solid #F7F2EE", borderTop: "1px solid #F7F2EE" }}>
           <Grid container spacing={2.5} sx={{ mt: 0.5 }}>
             <Grid item xs={12} sm={6}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mb: 0.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: "#3F342C", mb: 0.5 }}>
                 Full Name
               </Typography>
               <TextField
@@ -660,11 +666,16 @@ const Profile = () => {
                 name="name"
                 value={editForm.name}
                 onChange={handleEditFormChange}
+                sx={{
+                  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#A9744F",
+                  },
+                }}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mb: 0.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: "#3F342C", mb: 0.5 }}>
                 Role / Job Title
               </Typography>
               <TextField
@@ -673,11 +684,16 @@ const Profile = () => {
                 name="role"
                 value={editForm.role}
                 onChange={handleEditFormChange}
+                sx={{
+                  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#A9744F",
+                  },
+                }}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mb: 0.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: "#3F342C", mb: 0.5 }}>
                 Email Address
               </Typography>
               <TextField
@@ -687,11 +703,16 @@ const Profile = () => {
                 type="email"
                 value={editForm.email}
                 onChange={handleEditFormChange}
+                sx={{
+                  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#A9744F",
+                  },
+                }}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mb: 0.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: "#3F342C", mb: 0.5 }}>
                 Location
               </Typography>
               <TextField
@@ -700,11 +721,16 @@ const Profile = () => {
                 name="location"
                 value={editForm.location}
                 onChange={handleEditFormChange}
+                sx={{
+                  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#A9744F",
+                  },
+                }}
               />
             </Grid>
 
             <Grid item xs={12}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mb: 0.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: "#3F342C", mb: 0.5 }}>
                 Bio
               </Typography>
               <TextField
@@ -714,11 +740,16 @@ const Profile = () => {
                 name="bio"
                 value={editForm.bio}
                 onChange={handleEditFormChange}
+                sx={{
+                  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#A9744F",
+                  },
+                }}
               />
             </Grid>
 
             <Grid item xs={12}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "#374151", mb: 0.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: "#3F342C", mb: 0.5 }}>
                 Skills (Press Enter to Add)
               </Typography>
               <TextField
@@ -728,6 +759,11 @@ const Profile = () => {
                 value={newSkillInput}
                 onChange={(e) => setNewSkillInput(e.target.value)}
                 onKeyDown={handleAddSkill}
+                sx={{
+                  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#A9744F",
+                  },
+                }}
               />
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mt: 1.5 }}>
                 {editForm.skills.map((skill) => (
@@ -736,7 +772,7 @@ const Profile = () => {
                     label={skill}
                     size="small"
                     onDelete={() => handleRemoveSkill(skill)}
-                    sx={{ backgroundColor: "#EEF2FF", color: "#6366F1", fontWeight: 600 }}
+                    sx={{ backgroundColor: "#F7F2EE", color: "#A9744F", border: "1px solid #EFE9E4", fontWeight: 600 }}
                   />
                 ))}
               </Box>
@@ -745,7 +781,7 @@ const Profile = () => {
         </DialogContent>
 
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={handleCloseEditDialog} sx={{ color: "#64748B" }}>
+          <Button onClick={handleCloseEditDialog} sx={{ color: "#786C62" }}>
             Cancel
           </Button>
           <Button
@@ -753,10 +789,18 @@ const Profile = () => {
             startIcon={<SaveIcon />}
             onClick={handleSaveProfile}
             sx={{
-              backgroundColor: "#6366F1",
+              background: "linear-gradient(135deg, #A9744F, #8B5E3C)",
               color: "#FFFFFF",
               fontWeight: 700,
-              "&:hover": { backgroundColor: "#4F46E5" },
+              px: 2.5,
+              py: 0.8,
+              borderRadius: "10px",
+              boxShadow: "0 4px 12px rgba(169, 116, 79, 0.25)",
+              textTransform: "none",
+              "&:hover": {
+                background: "linear-gradient(135deg, #966541, #7A5133)",
+                boxShadow: "0 6px 16px rgba(169, 116, 79, 0.35)",
+              },
             }}
           >
             Save Profile
