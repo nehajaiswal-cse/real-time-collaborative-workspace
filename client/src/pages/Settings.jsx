@@ -30,7 +30,7 @@ import {
   LockOutlined as LockIcon,
   Visibility,
   VisibilityOff,
-  CheckCircleOutline as CheckIcon,
+  CheckCircleOutlined as CheckIcon,
 } from "@mui/icons-material";
 
 import Navbar from "../components/common/Navbar.jsx";

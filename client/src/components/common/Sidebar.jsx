@@ -16,6 +16,7 @@ import {
 import {
   Dashboard,
   ViewKanban,
+  Person,
   Groups,
   History,
   Settings,
@@ -39,6 +40,11 @@ const Sidebar = ({ open }) => {
       name: "My Boards",
       icon: <ViewKanban />,
       path: "/myboards",
+    },
+    {
+      name: "Profile",
+      icon: <Person />,
+      path: "/profile",
     },
     {
       name: "Members",
