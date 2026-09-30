@@ -1,4 +1,3 @@
-
 import axios from "axios";
 
 const API_URL =
@@ -27,13 +26,35 @@ export const getMyWorkspaces = async () => {
   );
 };
 
+export const createWorkspace = async (workspaceData) => {
+  const response = await axios.post(
+    `${API_URL}/workspaces`,
+    workspaceData,
+    getAuthConfig()
+  );
+
+  return response.data.workspace;
+};
+
+export const getWorkspaceMembers = async (workspaceId) => {
+  const response = await axios.get(
+    `${API_URL}/workspace-members/workspace/${workspaceId}`,
+    getAuthConfig()
+  );
+
+  return response.data.members || [];
+};
+
 export const addWorkspaceMember = async (
   workspaceId,
   memberData
 ) => {
   const response = await axios.post(
-    `${API_URL}/workspaces/${workspaceId}/members`,
-    memberData,
+    `${API_URL}/workspace-members`,
+    {
+      workspaceId,
+      ...memberData,
+    },
     getAuthConfig()
   );
 

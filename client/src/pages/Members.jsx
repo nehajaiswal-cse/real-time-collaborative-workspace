@@ -18,6 +18,7 @@ import AddMemberDialog from "../components/members/AddMemberDialog.jsx";
 
 import {
   getMyWorkspaces,
+  getWorkspaceMembers,
   addWorkspaceMember,
 } from "../api/workspaceApi.js";
 
@@ -39,6 +40,20 @@ export default function Members() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("member");
 
+  const loadWorkspaceMembers = async (wsId) => {
+    if (!wsId) {
+      setMembers([]);
+      return;
+    }
+    try {
+      const memberList = await getWorkspaceMembers(wsId);
+      setMembers(Array.isArray(memberList) ? memberList : []);
+    } catch (err) {
+      console.error("Failed to load workspace members:", err);
+      setMembers([]);
+    }
+  };
+
   const loadWorkspaces = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -49,14 +64,14 @@ export default function Members() {
 
       setWorkspaces(list);
 
-      const selected =
-        list.find((workspace) => workspace._id === workspaceId) ||
-        list[0];
+      const targetId = workspaceId || list[0]?._id || "";
+      setWorkspaceId(targetId);
 
-      setWorkspaceId(selected?._id || "");
-
-      const workspaceMembers = selected?.members || [];
-      setMembers(workspaceMembers);
+      if (targetId) {
+        await loadWorkspaceMembers(targetId);
+      } else {
+        setMembers([]);
+      }
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -91,12 +106,12 @@ export default function Members() {
     });
   }, [members, search, roleFilter]);
 
-  const handleWorkspaceChange = (event) => {
+  const handleWorkspaceChange = async (event) => {
     const id = event.target.value;
     setWorkspaceId(id);
-
-    const selected = workspaces.find((item) => item._id === id);
-    setMembers(selected?.members || []);
+    setLoading(true);
+    await loadWorkspaceMembers(id);
+    setLoading(false);
   };
 
   const handleAddMember = async (event) => {
@@ -116,7 +131,7 @@ export default function Members() {
       setRole("member");
       setNotice("Member added successfully.");
 
-      await loadWorkspaces();
+      await loadWorkspaceMembers(workspaceId);
     } catch (err) {
       setError(
         err.response?.data?.message ||
