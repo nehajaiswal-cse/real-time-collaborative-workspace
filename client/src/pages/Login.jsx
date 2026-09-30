@@ -86,7 +86,7 @@ const Login = () => {
       }
 
       // Redirect after successful login
-      navigate("/");
+      navigate("/dashboard");
 
     } catch (error) {
       console.error("Login failed:", error);
