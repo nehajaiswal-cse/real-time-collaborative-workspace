@@ -4,6 +4,7 @@ import Home from "./pages/Home.jsx";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import MyBoards from "./pages/MyBoards";
+import Members from "./pages/Members.jsx";
 
   return (
     <div>
@@ -19,6 +20,7 @@ import MyBoards from "./pages/MyBoards";
        
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/myboards" element={<MyBoards/>} />
+          <Route path="/members" element={<Members />} />
         
       </Routes>
 
