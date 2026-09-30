@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import MyBoards from "./pages/MyBoards";
 
+const App = () => {
   return (
     <div>
       <Routes>
@@ -24,7 +25,8 @@ import MyBoards from "./pages/MyBoards";
 
     </div>
   );
-}
+};
+
 
 
 
