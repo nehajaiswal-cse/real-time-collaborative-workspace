@@ -17,6 +17,7 @@ import WelcomeHeader from "../components/dashboard/WelcomeHeader.jsx";
 import OverviewCards from "../components/dashboard/OverviewCards.jsx";
 import BoardsSection from "../components/dashboard/BoardsSection.jsx";
 import RecentActivity from "../components/dashboard/RecentActivity";
+import WorkspaceChat from "../components/chat/WorkspaceChat";
 import { getDashboardData, getBoards } from "../api/dashboardApi";
 import { getMyWorkspaces, createWorkspace } from "../api/workspaceApi";
 import { createBoard } from "../services/boardService";
@@ -184,6 +185,13 @@ const Dashboard = () => {
           onOpenBoard={handleOpenBoard}
         />
 
+        {/* Workspace Chat */}
+        {activeWorkspaceId && (
+          <Box sx={{ mt: 3 }}>
+            <WorkspaceChat workspaceId={activeWorkspaceId} />
+          </Box>
+        )}
+
         {/* Recent Activity */}
         <RecentActivity activities={activities} />
       </Box>
@@ -209,7 +217,10 @@ const Dashboard = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setCreateBoardOpen(false)} disabled={creating}>
+            <Button
+              onClick={() => setCreateBoardOpen(false)}
+              disabled={creating}
+            >
               Cancel
             </Button>
             <Button
