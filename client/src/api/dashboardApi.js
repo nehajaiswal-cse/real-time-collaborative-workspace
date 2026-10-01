@@ -1,26 +1,36 @@
+
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-export const getDashboardData = async () => {
-  const response = await axios.get(`${API_URL}/dashboard`, {
+const getAuthConfig = () => {
+  const token = localStorage.getItem("token");
+
+  return {
     headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      Authorization: `Bearer ${token}`,
     },
-  });
-
-  return response.data.data;
+  };
 };
 
+// Fetch workspaces from the backend
 export const getBoards = async () => {
   const response = await axios.get(
-    "http://localhost:5000/api/boards",
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    }
+    `${API_URL}/workspaces`,
+    getAuthConfig()
   );
 
-  return response.data.data;
+  return response.data.workspaces || [];
+};
+
+// Create a workspace through the backend
+export const createBoard = async (name) => {
+  const response = await axios.post(
+    `${API_URL}/workspaces`,
+    { name },
+    getAuthConfig()
+  );
+
+  return response.data.workspace;
 };

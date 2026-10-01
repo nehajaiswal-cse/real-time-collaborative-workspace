@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-import { Box, Typography } from "@mui/material";
+import { Box} from "@mui/material";
 
 import Navbar from "../components/common/Navbar.jsx";
 import Sidebar from "../components/common/Sidebar.jsx";
@@ -8,7 +8,7 @@ import WelcomeHeader from "../components/dashboard/WelcomeHeader.jsx";
 import OverviewCards from "../components/dashboard/OverviewCards.jsx";
 import BoardsSection from "../components/dashboard/BoardsSection.jsx";
 import RecentActivity from "../components/dashboard/RecentActivity";
-import { getDashboardData, getBoards } from "../api/dashboardApi";
+import { getBoards } from "../api/dashboardApi";
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -19,43 +19,57 @@ const Dashboard = () => {
     setSidebarOpen((prev) => !prev);
   };
 
-  const handleCreateBoard = () => {
-    console.log("Create board clicked");
-  };
+  const handleCreateBoard = async () => {
+  const name = window.prompt("Enter workspace name:");
+
+  if (!name || !name.trim()) return;
+
+  try {
+    //await createBoard(name.trim());
+
+    const updatedBoards = await getBoards();
+    setBoards(updatedBoards);
+  } catch (error) {
+    console.error(
+      "Failed to create workspace:",
+      error.response?.data || error.message
+    );
+
+    window.alert(
+      error.response?.data?.message ||
+      "Unable to create workspace. Please try again."
+    );
+  }
+};
 
   const handleViewAll = () => {
     console.log("View all boards clicked");
   };
 
   // Load Boards
-  useEffect(() => {
-    const loadBoards = async () => {
-      try {
-        const data = await getBoards();
-        setBoards(data);
-      } catch (error) {
-        console.error("Failed to load boards:", error);
-      }
-    };
-
-    loadBoards();
-  }, []);
-
   // Load Recent Activity
-  useEffect(() => {
-    const loadDashboard = async () => {
-      try {
-        const data = await getDashboardData();
+ 
 
-        setActivities(data?.activities || []);
-      } catch (error) {
-        console.error("Failed to load dashboard:", error);
-        setActivities([]);
-      }
-    };
+useEffect(() => {
+  const loadBoards = async () => {
+    try {
+      const data = await getBoards();
+      setBoards(data);
+    } catch (error) {
+      console.error(
+        "Failed to load workspaces:",
+        error.response?.data || error.message
+      );
 
-    loadDashboard();
-  }, []);
+      setBoards([]);
+    }
+  };
+
+  loadBoards();
+}, []);
+
+const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+const userName = storedUser.name || "User";
 
   return (
     <Box
@@ -87,19 +101,9 @@ const Dashboard = () => {
           transition: "margin-left 0.3s ease",
         }}
       >
-        <WelcomeHeader userName="User" />
+        <WelcomeHeader userName={userName} />
 
-        {/* Dashboard Heading */}
-        <Typography
-          variant="h5"
-          sx={{
-            fontWeight: 700,
-            color: "#3F342C",
-            mb: 3,
-          }}
-        >
-          Dashboard
-        </Typography>
+        
 
         {/* Overview */}
         <OverviewCards />

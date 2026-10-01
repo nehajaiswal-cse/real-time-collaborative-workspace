@@ -57,15 +57,34 @@ export default function Members() {
 
       const workspaceMembers = selected?.members || [];
       setMembers(workspaceMembers);
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Unable to load workspace data. Check your login and backend API."
-      );
-      setMembers([]);
-    } finally {
-      setLoading(false);
-    }
+    } 
+catch (error) {
+  console.error("Failed to load workspaces:", error);
+
+  const status = error.response?.status;
+
+  if (status === 401) {
+    setError("Please log in again. Your session may have expired.");
+  } else if (status === 403) {
+    setError("You do not have permission to view these workspaces.");
+  } else if (status === 404) {
+    setError("Workspace API endpoint was not found.");
+  } else if (status >= 500) {
+    setError("Server error. Please try again later.");
+  } else if (!error.response) {
+    setError(
+      "Cannot connect to the backend. Check whether the server is running."
+    );
+  } else {
+    setError(
+      error.response.data?.message ||
+      "Failed to load workspace data."
+    );
+  }
+
+  setWorkspaces([]);
+  setMembers([]);
+}
   }, [workspaceId]);
 
   useEffect(() => {
