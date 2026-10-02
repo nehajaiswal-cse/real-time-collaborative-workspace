@@ -11,12 +11,13 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
-import BoardCard from "../boards/BoardCard.jsx";
+import BoardCard from "../boards/BoardCard";
 
 const BoardsSection = ({
   boards = [],
   onCreateBoard,
   onViewAll,
+  onOpenBoard,
 }) => {
   return (
     <Box sx={{ mt: 4, width: "100%" }}>
@@ -139,26 +140,18 @@ const BoardsSection = ({
         </Card>
       ) : (
         <Grid container spacing={2}>
-  {boards.map((board) => (
-    <Grid
-      item
-      xs={12}
-      sm={6}
-      md={4}
-      key={board._id}
-    >
-      <BoardCard
-        board={board}
-        onOpen={(selectedBoard) => {
-          console.log("Selected workspace:", selectedBoard._id);
-        }}
-        onMenuClick={(event, selectedBoard) => {
-          console.log("Workspace menu:", selectedBoard._id);
-        }}
-      />
-    </Grid>
-  ))}
-</Grid>
+          {boards.map((board) => (
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={4}
+              key={board._id || board.id}
+            >
+              <BoardCard board={board} onOpen={onOpenBoard} />
+            </Grid>
+          ))}
+        </Grid>
       )}
 
     </Box>

@@ -14,23 +14,33 @@ const getAuthConfig = () => {
   };
 };
 
-// Fetch workspaces from the backend
-export const getBoards = async () => {
-  const response = await axios.get(
-    `${API_URL}/workspaces`,
-    getAuthConfig()
-  );
-
-  return response.data.workspaces || [];
+export const getDashboardData = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/dashboard`, getAuthConfig());
+    return response.data?.data || response.data || { activities: [] };
+  } catch (error) {
+    // Backend doesn't have an explicit /dashboard endpoint, fall back cleanly
+    console.warn(error);
+    return { activities: [] };
+  }
 };
 
-// Create a workspace through the backend
-export const createBoard = async (name) => {
-  const response = await axios.post(
-    `${API_URL}/workspaces`,
-    { name },
+export const getBoards = async (workspaceId) => {
+  if (!workspaceId) return [];
+  const response = await axios.get(
+    `${API_URL}/boards/workspace/${workspaceId}`,
     getAuthConfig()
   );
 
-  return response.data.workspace;
+  return response.data.boards || response.data.data || [];
+};
+
+export const createBoardApi = async (boardData) => {
+  const response = await axios.post(
+    `${API_URL}/boards`,
+    boardData,
+    getAuthConfig()
+  );
+
+  return response.data.board;
 };

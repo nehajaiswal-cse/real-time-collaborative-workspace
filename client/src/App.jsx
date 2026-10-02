@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import MyBoards from "./pages/MyBoards.jsx";
+import BoardDetail from "./pages/BoardDetail.jsx";
 import Members from "./pages/Members.jsx";
  
 
@@ -21,6 +22,7 @@ const App = () => {
       {/* Application routes */}
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/myboards" element={<MyBoards />} />
+      <Route path="/boards/:boardId" element={<BoardDetail />} />
       <Route path="/members" element={<Members />} />
     </Routes>
   );
@@ -28,8 +30,6 @@ const App = () => {
 
 
  
-
-
 
 
 export default App;

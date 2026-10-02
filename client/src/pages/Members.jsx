@@ -18,6 +18,7 @@ import AddMemberDialog from "../components/members/AddMemberDialog.jsx";
 
 import {
   getMyWorkspaces,
+  getWorkspaceMembers,
   addWorkspaceMember,
 } from "../api/workspaceApi.js";
 
@@ -39,6 +40,21 @@ export default function Members() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("member");
 
+  const loadWorkspaceMembers = async (wsId) => {
+    if (!wsId) {
+      setMembers([]);
+      return;
+    }
+
+    try {
+      const memberList = await getWorkspaceMembers(wsId);
+      setMembers(Array.isArray(memberList) ? memberList : []);
+    } catch (err) {
+      console.error("Failed to load workspace members:", err);
+      setMembers([]);
+    }
+  };
+
   const loadWorkspaces = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -49,47 +65,48 @@ export default function Members() {
 
       setWorkspaces(list);
 
-      const selected =
-        list.find((workspace) => workspace._id === workspaceId) ||
-        list[0];
+      const targetId = workspaceId || list[0]?._id || "";
+      setWorkspaceId(targetId);
 
-      setWorkspaceId(selected?._id || "");
+      if (targetId) {
+        await loadWorkspaceMembers(targetId);
+      } else {
+        setMembers([]);
+      }
+    } catch (error) {
+      console.error("Failed to load workspaces:", error);
 
-      const workspaceMembers = selected?.members || [];
-      setMembers(workspaceMembers);
-    } 
-catch (error) {
-  console.error("Failed to load workspaces:", error);
+      const status = error.response?.status;
 
-  const status = error.response?.status;
+      if (status === 401) {
+        setError("Please log in again. Your session may have expired.");
+      } else if (status === 403) {
+        setError("You do not have permission to view these workspaces.");
+      } else if (status === 404) {
+        setError("Workspace API endpoint was not found.");
+      } else if (status >= 500) {
+        setError("Server error. Please try again later.");
+      } else if (!error.response) {
+        setError(
+          "Cannot connect to the backend. Check whether the server is running."
+        );
+      } else {
+        setError(
+          error.response.data?.message ||
+            "Failed to load workspace data."
+        );
+      }
 
-  if (status === 401) {
-    setError("Please log in again. Your session may have expired.");
-  } else if (status === 403) {
-    setError("You do not have permission to view these workspaces.");
-  } else if (status === 404) {
-    setError("Workspace API endpoint was not found.");
-  } else if (status >= 500) {
-    setError("Server error. Please try again later.");
-  } else if (!error.response) {
-    setError(
-      "Cannot connect to the backend. Check whether the server is running."
-    );
-  } else {
-    setError(
-      error.response.data?.message ||
-      "Failed to load workspace data."
-    );
-  }
-
-  setWorkspaces([]);
-  setMembers([]);
-}
+      setWorkspaces([]);
+      setMembers([]);
+    } finally {
+      setLoading(false);
+    }
   }, [workspaceId]);
 
   useEffect(() => {
     loadWorkspaces();
-  }, []);
+  }, [loadWorkspaces]);
 
   const filteredMembers = useMemo(() => {
     return members.filter((member) => {
@@ -110,16 +127,20 @@ catch (error) {
     });
   }, [members, search, roleFilter]);
 
-  const handleWorkspaceChange = (event) => {
+  const handleWorkspaceChange = async (event) => {
     const id = event.target.value;
-    setWorkspaceId(id);
 
-    const selected = workspaces.find((item) => item._id === id);
-    setMembers(selected?.members || []);
+    setWorkspaceId(id);
+    setLoading(true);
+
+    await loadWorkspaceMembers(id);
+
+    setLoading(false);
   };
 
   const handleAddMember = async (event) => {
     event.preventDefault();
+
     setInviteLoading(true);
     setError("");
     setNotice("");
@@ -135,7 +156,7 @@ catch (error) {
       setRole("member");
       setNotice("Member added successfully.");
 
-      await loadWorkspaces();
+      await loadWorkspaceMembers(workspaceId);
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -149,6 +170,7 @@ catch (error) {
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#FAF8F6" }}>
       <Navbar onMenuClick={() => setSidebarOpen((prev) => !prev)} />
+
       <Sidebar open={sidebarOpen} />
 
       <Box
@@ -180,7 +202,11 @@ catch (error) {
 
         <Paper
           elevation={0}
-          sx={{ p: 2, mb: 3, border: "1px solid #EEE5DE" }}
+          sx={{
+            p: 2,
+            mb: 3,
+            border: "1px solid #EEE5DE",
+          }}
         >
           <Typography fontWeight={600} mb={1} color="#3F342C">
             Select Workspace
@@ -208,7 +234,10 @@ catch (error) {
 
         <Paper
           elevation={0}
-          sx={{ border: "1px solid #EEE5DE", borderRadius: 2 }}
+          sx={{
+            border: "1px solid #EEE5DE",
+            borderRadius: 2,
+          }}
         >
           <MembersToolbar
             search={search}

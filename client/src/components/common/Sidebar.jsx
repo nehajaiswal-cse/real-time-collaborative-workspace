@@ -13,14 +13,12 @@ import {
   Typography,
 } from "@mui/material";
 
-import {
-  Dashboard,
-  ViewKanban,
-  Groups,
-  History,
-  Settings,
-  Logout,
-} from "@mui/icons-material";
+import Dashboard from "@mui/icons-material/Dashboard";
+import ViewKanban from "@mui/icons-material/ViewKanban";
+import Groups from "@mui/icons-material/Groups";
+import History from "@mui/icons-material/History";
+import Settings from "@mui/icons-material/Settings";
+import Logout from "@mui/icons-material/Logout";
 
 const PRIMARY_COLOR = "#A9744F";
 const TEXT_COLOR = "#5F5A55";

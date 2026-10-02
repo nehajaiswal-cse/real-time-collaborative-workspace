@@ -21,9 +21,7 @@ export const initSocket = (server) => {
 
       socket.join(`workspace:${workspaceId}`);
 
-      console.log(
-        `Socket ${socket.id} joined workspace:${workspaceId}`
-      );
+      console.log(`Socket ${socket.id} joined workspace:${workspaceId}`);
     });
 
     // Leave workspace room
@@ -34,9 +32,16 @@ export const initSocket = (server) => {
 
       socket.leave(`workspace:${workspaceId}`);
 
-      console.log(
-        `Socket ${socket.id} left workspace:${workspaceId}`
-      );
+      console.log(`Socket ${socket.id} left workspace:${workspaceId}`);
+    });
+
+    // Real-time chat message
+    socket.on("chat:send", ({ workspaceId, message }) => {
+      if (!workspaceId || !message) {
+        return;
+      }
+
+      io.to(`workspace:${workspaceId}`).emit("chat:message", message);
     });
 
     // Disconnect

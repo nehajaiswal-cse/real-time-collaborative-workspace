@@ -12,10 +12,8 @@ import {
   Typography,
 } from "@mui/material";
 
-import {
-  Visibility,
-  VisibilityOff,
-} from "@mui/icons-material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 import { Link, useNavigate } from "react-router-dom";
 

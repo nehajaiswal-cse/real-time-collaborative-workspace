@@ -1,6 +1,8 @@
 
 import { Box, Button, Stack, Typography } from "@mui/material";
-import { Add, Groups, Refresh } from "@mui/icons-material";
+import Add from "@mui/icons-material/Add";
+import Groups from "@mui/icons-material/Groups";
+import Refresh from "@mui/icons-material/Refresh";
 
 export default function MembersHeader({
   onRefresh,
