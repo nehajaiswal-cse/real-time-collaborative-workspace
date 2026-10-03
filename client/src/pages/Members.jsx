@@ -45,6 +45,7 @@ export default function Members() {
       setMembers([]);
       return;
     }
+
     try {
       const memberList = await getWorkspaceMembers(wsId);
       setMembers(Array.isArray(memberList) ? memberList : []);
@@ -72,11 +73,31 @@ export default function Members() {
       } else {
         setMembers([]);
       }
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Unable to load workspace data. Check your login and backend API."
-      );
+    } catch (error) {
+      console.error("Failed to load workspaces:", error);
+
+      const status = error.response?.status;
+
+      if (status === 401) {
+        setError("Please log in again. Your session may have expired.");
+      } else if (status === 403) {
+        setError("You do not have permission to view these workspaces.");
+      } else if (status === 404) {
+        setError("Workspace API endpoint was not found.");
+      } else if (status >= 500) {
+        setError("Server error. Please try again later.");
+      } else if (!error.response) {
+        setError(
+          "Cannot connect to the backend. Check whether the server is running."
+        );
+      } else {
+        setError(
+          error.response.data?.message ||
+            "Failed to load workspace data."
+        );
+      }
+
+      setWorkspaces([]);
       setMembers([]);
     } finally {
       setLoading(false);
@@ -85,7 +106,7 @@ export default function Members() {
 
   useEffect(() => {
     loadWorkspaces();
-  }, []);
+  }, [loadWorkspaces]);
 
   const filteredMembers = useMemo(() => {
     return members.filter((member) => {
@@ -108,14 +129,18 @@ export default function Members() {
 
   const handleWorkspaceChange = async (event) => {
     const id = event.target.value;
+
     setWorkspaceId(id);
     setLoading(true);
+
     await loadWorkspaceMembers(id);
+
     setLoading(false);
   };
 
   const handleAddMember = async (event) => {
     event.preventDefault();
+
     setInviteLoading(true);
     setError("");
     setNotice("");
@@ -145,6 +170,7 @@ export default function Members() {
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#FAF8F6" }}>
       <Navbar onMenuClick={() => setSidebarOpen((prev) => !prev)} />
+
       <Sidebar open={sidebarOpen} />
 
       <Box
@@ -176,7 +202,11 @@ export default function Members() {
 
         <Paper
           elevation={0}
-          sx={{ p: 2, mb: 3, border: "1px solid #EEE5DE" }}
+          sx={{
+            p: 2,
+            mb: 3,
+            border: "1px solid #EEE5DE",
+          }}
         >
           <Typography fontWeight={600} mb={1} color="#3F342C">
             Select Workspace
@@ -204,7 +234,10 @@ export default function Members() {
 
         <Paper
           elevation={0}
-          sx={{ border: "1px solid #EEE5DE", borderRadius: 2 }}
+          sx={{
+            border: "1px solid #EEE5DE",
+            borderRadius: 2,
+          }}
         >
           <MembersToolbar
             search={search}

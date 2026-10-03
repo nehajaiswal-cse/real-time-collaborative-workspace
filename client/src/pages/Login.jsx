@@ -85,8 +85,11 @@ const Login = () => {
         );
       }
 
+      localStorage.setItem("token", response.token);
+localStorage.setItem("user", JSON.stringify(response.user));
+
       // Redirect after successful login
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
 
     } catch (error) {
       console.error("Login failed:", error);

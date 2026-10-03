@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  Alert,
   Box,
-  Typography,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -24,33 +25,33 @@ import { createBoard } from "../services/boardService";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activities, setActivities] = useState([]);
   const [boards, setBoards] = useState([]);
-  const [workspaces, setWorkspaces] = useState([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState("");
-  const [user, setUser] = useState(null);
+  const [loadingBoards, setLoadingBoards] = useState(true);
+  const [error, setError] = useState("");
+
+  const [user] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
+  });
 
   const [createBoardOpen, setCreateBoardOpen] = useState(false);
   const [newBoardName, setNewBoardName] = useState("");
   const [creating, setCreating] = useState(false);
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        console.error("Failed to parse user:", e);
-      }
-    }
-  }, []);
 
   const handleMenuClick = () => {
     setSidebarOpen((prev) => !prev);
   };
 
   const handleCreateBoard = () => {
+    setError("");
+    setNewBoardName("");
     setCreateBoardOpen(true);
   };
 
@@ -59,180 +60,252 @@ const Dashboard = () => {
   };
 
   const handleOpenBoard = (board) => {
-    if (board && board._id) {
-      navigate(`/boards/${board._id}`);
+    const boardId = board?._id || board?.id;
+
+    if (!boardId) {
+      setError("Unable to open this board because its ID is missing.");
+      return;
     }
+
+    navigate(`/boards/${boardId}`);
   };
 
-  // Load Workspaces and Boards
+  // Load workspaces first, then load boards for the selected workspace.
   useEffect(() => {
-    const initWorkspaceData = async () => {
+    let cancelled = false;
+
+    const loadWorkspaceAndBoards = async () => {
+      setLoadingBoards(true);
+      setError("");
+
       try {
-        let wsList = await getMyWorkspaces();
-        if (!Array.isArray(wsList) || wsList.length === 0) {
-          // If user has no workspace, auto-create a default personal workspace
-          try {
-            const newWs = await createWorkspace({ name: "My Workspace" });
-            if (newWs) wsList = [newWs];
-          } catch (e) {
-            console.error("Auto create workspace failed:", e);
+        let workspaces = await getMyWorkspaces();
+
+        if (!Array.isArray(workspaces)) {
+          workspaces = [];
+        }
+
+        if (workspaces.length === 0) {
+          const workspace = await createWorkspace({
+            name: "My Workspace",
+          });
+
+          if (workspace) {
+            workspaces = [workspace];
           }
         }
-        setWorkspaces(wsList || []);
 
-        const activeWs = wsList?.[0]?._id || "";
-        setActiveWorkspaceId(activeWs);
+        const workspaceId = workspaces[0]?._id || workspaces[0]?.id || "";
 
-        if (activeWs) {
-          const boardList = await getBoards(activeWs);
-          setBoards(boardList || []);
+        if (cancelled) return;
+
+        setActiveWorkspaceId(workspaceId);
+
+        if (!workspaceId) {
+          setBoards([]);
+          return;
         }
-      } catch (error) {
-        console.error("Failed to load workspace/boards:", error);
+
+        const boardList = await getBoards(workspaceId);
+
+        if (!cancelled) {
+          setBoards(Array.isArray(boardList) ? boardList : []);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error("Failed to load workspaces and boards:", err);
+          setError(err.message || "Unable to load your boards.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingBoards(false);
+        }
       }
     };
 
-    initWorkspaceData();
+    loadWorkspaceAndBoards();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Load Recent Activity
+  // Load activity separately. Do not load boards again without a workspace ID.
   useEffect(() => {
-    const loadDashboard = async () => {
+    let cancelled = false;
+
+    const loadActivity = async () => {
       try {
         const data = await getDashboardData();
-        setActivities(data?.activities || []);
-      } catch (error) {
-        console.error("Failed to load dashboard:", error);
-        setActivities([]);
+
+        if (!cancelled) {
+          setActivities(data?.activities || []);
+        }
+      } catch (err) {
+        console.error("Failed to load dashboard activity:", err);
+
+        if (!cancelled) {
+          setActivities([]);
+        }
       }
     };
 
-    loadDashboard();
+    loadActivity();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleCreateBoardSubmit = async (e) => {
-    e.preventDefault();
-    if (!newBoardName.trim()) return;
+  const handleCreateBoardSubmit = async (event) => {
+    event.preventDefault();
+
+    const boardName = newBoardName.trim();
+
+    if (!boardName || creating) return;
+
+    setCreating(true);
+    setError("");
 
     try {
-      setCreating(true);
-      let targetWsId = activeWorkspaceId;
-      if (!targetWsId) {
-        const newWs = await createWorkspace({ name: "My Workspace" });
-        targetWsId = newWs._id;
-        setActiveWorkspaceId(targetWsId);
-        setWorkspaces([newWs]);
+      let workspaceId = activeWorkspaceId;
+
+      if (!workspaceId) {
+        const workspace = await createWorkspace({
+          name: "My Workspace",
+        });
+
+        workspaceId = workspace?._id || workspace?.id;
+
+        if (!workspaceId) {
+          throw new Error("Could not create or find a workspace.");
+        }
+
+        setActiveWorkspaceId(workspaceId);
       }
 
-      const newBoard = await createBoard(newBoardName.trim(), targetWsId);
-      setBoards((prev) => [newBoard, ...prev]);
+      const newBoard = await createBoard(boardName, workspaceId);
+
+      if (!newBoard?._id && !newBoard?.id) {
+        throw new Error("The server did not return the created board.");
+      }
+
+      setBoards((previousBoards) => [newBoard, ...previousBoards]);
       setNewBoardName("");
       setCreateBoardOpen(false);
     } catch (err) {
-      alert(err.message || "Failed to create board");
+      console.error("Failed to create board:", err);
+      setError(err.message || "Failed to create board. Please try again.");
     } finally {
       setCreating(false);
     }
   };
 
+  const userName = user?.name || "User";
+
   return (
     <Box
       sx={{
         minHeight: "100vh",
-        backgroundColor: "#f9fafb",
+        bgcolor: "#FFFFFF",
+        color: "#3F342C",
       }}
     >
-      {/* Fixed Navbar */}
       <Navbar onMenuClick={handleMenuClick} />
 
-      {/* Fixed Sidebar */}
       <Sidebar open={sidebarOpen} />
 
-      {/* Main Content */}
       <Box
         component="main"
         sx={{
           p: 3,
           mt: "72px",
           ml: sidebarOpen ? "256px" : "72px",
-          height: "calc(100vh - 72px)",
-          overflowY: "auto",
+          minHeight: "calc(100vh - 72px)",
+          boxSizing: "border-box",
+          overflowX: "hidden",
           transition: "margin-left 0.3s ease",
         }}
       >
-        <WelcomeHeader userName={user?.name || "User"} />
+        <WelcomeHeader userName={userName} />
 
-        {/* Dashboard Heading */}
-        <Typography
-          variant="h5"
-          sx={{
-            fontWeight: 700,
-            color: "#3F342C",
-            mb: 3,
-          }}
-        >
-          Dashboard
-        </Typography>
-
-        {/* Overview */}
         <OverviewCards />
 
-        {/* Boards */}
+        {error && (
+          <Alert
+            severity="error"
+            onClose={() => setError("")}
+            sx={{ mb: 2 }}
+          >
+            {error}
+          </Alert>
+        )}
+
         <BoardsSection
           boards={boards}
+          loading={loadingBoards}
           onCreateBoard={handleCreateBoard}
           onViewAll={handleViewAll}
           onOpenBoard={handleOpenBoard}
         />
 
-        {/* Workspace Chat */}
         {activeWorkspaceId && (
           <Box sx={{ mt: 3 }}>
             <WorkspaceChat workspaceId={activeWorkspaceId} />
           </Box>
         )}
 
-        {/* Recent Activity */}
         <RecentActivity activities={activities} />
       </Box>
 
-      {/* Create Board Modal */}
       <Dialog
         open={createBoardOpen}
-        onClose={() => setCreateBoardOpen(false)}
+        onClose={() => {
+          if (!creating) setCreateBoardOpen(false);
+        }}
         fullWidth
         maxWidth="xs"
       >
-        <form onSubmit={handleCreateBoardSubmit}>
-          <DialogTitle>Create New Board</DialogTitle>
+        <Box component="form" onSubmit={handleCreateBoardSubmit}>
+          <DialogTitle sx={{ color: "#3F342C" }}>
+            Create New Board
+          </DialogTitle>
+
           <DialogContent>
             <TextField
               fullWidth
               autoFocus
+              required
               label="Board Name"
               value={newBoardName}
-              onChange={(e) => setNewBoardName(e.target.value)}
+              onChange={(event) => setNewBoardName(event.target.value)}
               margin="normal"
-              required
+              inputProps={{ maxLength: 100 }}
             />
           </DialogContent>
-          <DialogActions>
+
+          <DialogActions sx={{ px: 3, pb: 2 }}>
             <Button
               onClick={() => setCreateBoardOpen(false)}
               disabled={creating}
+              sx={{ color: "#77716C" }}
             >
               Cancel
             </Button>
+
             <Button
               type="submit"
               variant="contained"
               disabled={creating || !newBoardName.trim()}
-              sx={{ bgcolor: "#A9744F", "&:hover": { bgcolor: "#8B5E3C" } }}
+              sx={{
+                bgcolor: "#A9744F",
+                "&:hover": { bgcolor: "#8B5E3C" },
+              }}
             >
               {creating ? "Creating..." : "Create Board"}
             </Button>
           </DialogActions>
-        </form>
+        </Box>
       </Dialog>
     </Box>
   );

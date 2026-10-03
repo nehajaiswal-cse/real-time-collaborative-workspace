@@ -1,3 +1,4 @@
+
 import axios from "axios";
 
 const API_URL =
@@ -5,8 +6,11 @@ const API_URL =
 
 const getAuthConfig = () => {
   const token = localStorage.getItem("token");
+
   return {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   };
 };
 
@@ -16,6 +20,7 @@ export const getDashboardData = async () => {
     return response.data?.data || response.data || { activities: [] };
   } catch (error) {
     // Backend doesn't have an explicit /dashboard endpoint, fall back cleanly
+    console.warn(error);
     return { activities: [] };
   }
 };

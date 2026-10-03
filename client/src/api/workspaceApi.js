@@ -1,29 +1,47 @@
 import axios from "axios";
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000/api";
 
 const getAuthConfig = () => {
   const token = localStorage.getItem("token");
 
   return {
-    headers: token
-      ? { Authorization: `Bearer ${token}` }
-      : {},
+    headers: {
+      ...(token && {
+        Authorization: `Bearer ${token}`,
+      }),
+    },
   };
 };
 
 export const getMyWorkspaces = async () => {
-  const response = await axios.get(
-    `${API_URL}/workspaces`,
-    getAuthConfig()
-  );
+  try {
+    const response = await axios.get(
+      `${API_URL}/workspaces`,
+      getAuthConfig()
+    );
 
-  return (
-    response.data.workspaces ||
-    response.data.data ||
-    []
-  );
+    const workspaces =
+      response.data.workspaces ??
+      response.data.data ??
+      [];
+
+    if (!Array.isArray(workspaces)) {
+      throw new Error("Invalid workspace API response");
+    }
+
+    return workspaces;
+  } catch (error) {
+    console.error(
+      "Workspace API error:",
+      error.response?.status,
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
 };
 
 export const createWorkspace = async (workspaceData) => {
