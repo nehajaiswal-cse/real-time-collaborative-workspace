@@ -8,7 +8,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { Groups } from "@mui/icons-material";
+import Groups from "@mui/icons-material/Groups";
 
 export default function MembersList({ members, loading, error }) {
   if (loading) {
