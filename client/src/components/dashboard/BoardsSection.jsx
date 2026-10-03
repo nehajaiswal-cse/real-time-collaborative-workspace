@@ -11,10 +11,13 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
+import BoardCard from "../boards/BoardCard";
+
 const BoardsSection = ({
   boards = [],
   onCreateBoard,
   onViewAll,
+  onOpenBoard,
 }) => {
   return (
     <Box sx={{ mt: 4, width: "100%" }}>
@@ -143,9 +146,9 @@ const BoardsSection = ({
               xs={12}
               sm={6}
               md={4}
-              key={board.id}
+              key={board._id || board.id}
             >
-              {/* board card */}
+              <BoardCard board={board} onOpen={onOpenBoard} />
             </Grid>
           ))}
         </Grid>

@@ -5,11 +5,11 @@ import User from "../models/user.js";
 // Add member to workspace
 export const addMember = async (req, res) => {
   try {
-    const { workspaceId, userId, role } = req.body;
+    const { workspaceId, userId, email, role } = req.body;
 
-    if (!workspaceId || !userId) {
+    if (!workspaceId || (!userId && !email)) {
       return res.status(400).json({
-        message: "Workspace and user are required"
+        message: "Workspace and user (ID or email) are required"
       });
     }
 
@@ -28,7 +28,12 @@ export const addMember = async (req, res) => {
       });
     }
 
-    const user = await User.findById(userId);
+    let user;
+    if (userId) {
+      user = await User.findById(userId);
+    } else if (email) {
+      user = await User.findOne({ email: email.trim().toLowerCase() });
+    }
 
     if (!user) {
       return res.status(404).json({
@@ -38,7 +43,7 @@ export const addMember = async (req, res) => {
 
     const existingMember = await WorkspaceMember.findOne({
       workspace: workspaceId,
-      user: userId
+      user: user._id
     });
 
     if (existingMember) {
@@ -49,7 +54,7 @@ export const addMember = async (req, res) => {
 
     const member = await WorkspaceMember.create({
       workspace: workspaceId,
-      user: userId,
+      user: user._id,
       role: role || "member"
     });
 
