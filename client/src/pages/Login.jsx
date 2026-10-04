@@ -72,21 +72,22 @@ const Login = () => {
 
       console.log("Login successful:", response);
 
-      // Save JWT token if backend sends one
-      if (response.token) {
-        localStorage.setItem("token", response.token);
-      }
+      
+// Save JWT token
+if (!response.token) {
+  throw new Error("Token was not returned by the server.");
+}
 
-      // Save user if backend sends user data
-      if (response.user) {
-        localStorage.setItem(
-          "user",
-          JSON.stringify(response.user)
-        );
-      }
+localStorage.setItem("token", response.token);
 
-      localStorage.setItem("token", response.token);
-localStorage.setItem("user", JSON.stringify(response.user));
+// Save user
+if (response.user) {
+  localStorage.setItem(
+    "user",
+    JSON.stringify(response.user)
+  );
+}
+
 
       // Redirect after successful login
       navigate("/dashboard", { replace: true });

@@ -52,21 +52,14 @@ export const createBoard = async (req, res) => {
 export const getWorkspaceBoards = async (req, res) => {
   try {
     const { workspaceId } = req.params;
-    console.log("========== GET WORKSPACE BOARDS ==========");
-console.log("workspaceId:", workspaceId);
-console.log("req.user:", req.user);
-console.log("req.user.id:", req.user?.id);
-console.log("req.user._id:", req.user?._id);
+
 
     // Check workspace membership
     const membership = await WorkspaceMember.findOne({
       workspace: workspaceId,
       user: req.user.id
     });
-    console.log("========== MEMBERSHIP DEBUG ==========");
-console.log("workspaceId:", workspaceId);
-console.log("userId:", req.user.id);
-console.log("membership:", membership);
+
 
 const allMemberships = await WorkspaceMember.find({});
 console.log("ALL WORKSPACE MEMBERSHIPS:");
