@@ -188,10 +188,12 @@ minHeight: "100vh",
 bgcolor: "#FAF8F6",
 }}
 >
+  {/* Navbar */}
 <Navbar
 onMenuClick={() => setSidebarOpen((previous) => !previous)}
 />
 
+{/* Sidebar */}
 
   <Sidebar open={sidebarOpen} />
 
