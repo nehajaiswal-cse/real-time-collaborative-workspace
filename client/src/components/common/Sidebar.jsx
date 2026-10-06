@@ -1,5 +1,4 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 
 import {
   Box,
@@ -26,7 +25,8 @@ import Logout from "@mui/icons-material/Logout";
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import Business from "@mui/icons-material/Business";
 
-import { getMyWorkspaces } from "../../api/workspaceApi";
+import { useState } from "react";
+import { useWorkspace } from "../../context/workspaceContext";
 
 const PRIMARY_COLOR = "#A9744F";
 const TEXT_COLOR = "#5F5A55";
@@ -35,105 +35,15 @@ const Sidebar = ({ open }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [workspaces, setWorkspaces] = useState([]);
-  const [selectedWorkspace, setSelectedWorkspace] = useState(null);
+  const {
+    workspaces,
+    selectedWorkspace,
+    loading,
+    switchWorkspace,
+  } = useWorkspace();
 
-  const [workspaceAnchor, setWorkspaceAnchor] = useState(null);
-  const [loadingWorkspaces, setLoadingWorkspaces] = useState(true);
-
-  // ================================
-  // Fetch Workspaces From Database
-  // ================================
-
-  useEffect(() => {
-    const fetchWorkspaces = async () => {
-      try {
-        setLoadingWorkspaces(true);
-
-        const data = await getMyWorkspaces();
-
-        console.log("Workspaces:", data);
-
-        // Handles either:
-        // { workspaces: [...] }
-        // or directly [...]
-        const workspaceList = Array.isArray(data)
-          ? data
-          : data.workspaces || [];
-
-        setWorkspaces(workspaceList);
-
-        // Check previously selected workspace
-        const savedWorkspace =
-          localStorage.getItem("selectedWorkspace");
-
-        if (savedWorkspace) {
-          const parsedWorkspace =
-            JSON.parse(savedWorkspace);
-
-          const exists = workspaceList.find(
-            (workspace) =>
-              workspace._id === parsedWorkspace._id
-          );
-
-          if (exists) {
-            setSelectedWorkspace(exists);
-            return;
-          }
-        }
-
-        // Otherwise select first workspace
-        if (workspaceList.length > 0) {
-          setSelectedWorkspace(workspaceList[0]);
-
-          localStorage.setItem(
-            "selectedWorkspace",
-            JSON.stringify(workspaceList[0])
-          );
-        }
-      } catch (error) {
-        console.error(
-          "Failed to fetch workspaces:",
-          error
-        );
-      } finally {
-        setLoadingWorkspaces(false);
-      }
-    };
-
-    fetchWorkspaces();
-  }, []);
-
-  // ================================
-  // Workspace Dropdown
-  // ================================
-
-  const handleWorkspaceClick = (event) => {
-    setWorkspaceAnchor(event.currentTarget);
-  };
-
-  const handleWorkspaceSelect = (workspace) => {
-    setSelectedWorkspace(workspace);
-
-    localStorage.setItem(
-      "selectedWorkspace",
-      JSON.stringify(workspace)
-    );
-
-    setWorkspaceAnchor(null);
-
-    console.log(
-      "Selected Workspace:",
-      workspace._id
-    );
-
-    // Later we can navigate to workspace dashboard
-    // navigate(`/workspace/${workspace._id}`);
-  };
-
-  // ================================
-  // Navigation
-  // ================================
+  const [workspaceAnchor, setWorkspaceAnchor] =
+    useState(null);
 
   const menuItems = [
     {
@@ -163,16 +73,21 @@ const Sidebar = ({ open }) => {
     },
   ];
 
-  // ================================
-  // Logout
-  // ================================
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("selectedWorkspace");
 
     navigate("/login");
+  };
+
+  const handleWorkspaceClick = (event) => {
+    setWorkspaceAnchor(event.currentTarget);
+  };
+
+  const handleWorkspaceSelect = (workspace) => {
+    switchWorkspace(workspace);
+    setWorkspaceAnchor(null);
   };
 
   return (
@@ -210,7 +125,7 @@ const Sidebar = ({ open }) => {
       }}
     >
       {/* ================================= */}
-      {/* Workspace Selector */}
+      {/* WORKSPACE SELECTOR */}
       {/* ================================= */}
 
       <Box sx={{ px: 1.5, pt: 2.5, pb: 1 }}>
@@ -233,7 +148,8 @@ const Sidebar = ({ open }) => {
         <Tooltip
           title={
             !open
-              ? selectedWorkspace?.name || "Workspace"
+              ? selectedWorkspace?.name ||
+                "Workspace"
               : ""
           }
           placement="right"
@@ -242,7 +158,7 @@ const Sidebar = ({ open }) => {
           <Button
             fullWidth
             onClick={handleWorkspaceClick}
-            disabled={loadingWorkspaces}
+            disabled={loading}
             sx={{
               minHeight: "48px",
 
@@ -268,7 +184,7 @@ const Sidebar = ({ open }) => {
               },
             }}
           >
-            {loadingWorkspaces ? (
+            {loading ? (
               <CircularProgress
                 size={20}
                 sx={{
@@ -331,7 +247,7 @@ const Sidebar = ({ open }) => {
         </Tooltip>
 
         {/* ================================= */}
-        {/* Workspace Dropdown */}
+        {/* WORKSPACE MENU */}
         {/* ================================= */}
 
         <Menu
@@ -341,7 +257,7 @@ const Sidebar = ({ open }) => {
           PaperProps={{
             sx: {
               mt: 1,
-              minWidth: "220px",
+              minWidth: "230px",
               borderRadius: "12px",
               border: "1px solid #eee5df",
               boxShadow:
@@ -379,21 +295,6 @@ const Sidebar = ({ open }) => {
                 onClick={() =>
                   handleWorkspaceSelect(workspace)
                 }
-                sx={{
-                  py: 1.2,
-                  borderRadius: "8px",
-                  mx: 0.5,
-
-                  "&.Mui-selected": {
-                    backgroundColor:
-                      "rgba(169, 116, 79, 0.10)",
-                  },
-
-                  "&.Mui-selected:hover": {
-                    backgroundColor:
-                      "rgba(169, 116, 79, 0.15)",
-                  },
-                }}
               >
                 <ListItemIcon
                   sx={{
@@ -428,7 +329,7 @@ const Sidebar = ({ open }) => {
       <Divider sx={{ borderColor: "#f0f0f0" }} />
 
       {/* ================================= */}
-      {/* Navigation */}
+      {/* NAVIGATION */}
       {/* ================================= */}
 
       <Box sx={{ px: 1.5, py: 2 }}>
@@ -465,7 +366,9 @@ const Sidebar = ({ open }) => {
                   arrow
                 >
                   <ListItemButton
-                    onClick={() => navigate(item.path)}
+                    onClick={() =>
+                      navigate(item.path)
+                    }
                     sx={{
                       minHeight: "48px",
 
@@ -536,7 +439,7 @@ const Sidebar = ({ open }) => {
       </Box>
 
       {/* ================================= */}
-      {/* Logout */}
+      {/* LOGOUT */}
       {/* ================================= */}
 
       <Box sx={{ mt: "auto" }}>
@@ -551,7 +454,9 @@ const Sidebar = ({ open }) => {
             <Button
               fullWidth
               onClick={handleLogout}
-              startIcon={open ? <Logout /> : null}
+              startIcon={
+                open ? <Logout /> : null
+              }
               sx={{
                 minHeight: "48px",
 
@@ -574,11 +479,6 @@ const Sidebar = ({ open }) => {
                 "&:hover": {
                   backgroundColor: "#fff5f5",
                   color: "#ef4444",
-                },
-
-                "& .MuiButton-startIcon": {
-                  marginLeft: 0,
-                  marginRight: open ? 12 : 0,
                 },
               }}
             >
