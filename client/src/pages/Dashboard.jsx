@@ -19,6 +19,7 @@ import OverviewCards from "../components/dashboard/OverviewCards.jsx";
 import BoardsSection from "../components/dashboard/BoardsSection.jsx";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import WorkspaceChat from "../components/chat/WorkspaceChat";
+import WorkspaceDocuments from "../components/documents/WorkspaceDocuments";
 import { getDashboardData, getBoards } from "../api/dashboardApi";
 import { getMyWorkspaces, createWorkspace } from "../api/workspaceApi";
 import { createBoard } from "../services/boardService";
@@ -255,6 +256,15 @@ const Dashboard = () => {
           </Box>
         )}
 
+        {/* Collaborative Documents */}
+        {activeWorkspaceId && (
+          <Box sx={{ mt: 3 }}>
+            <WorkspaceDocuments workspaceId={activeWorkspaceId} />
+          </Box>
+        )}
+
+        {/* Recent Activity */}
+        <RecentActivity activities={activities} />
         <RecentActivity activities={activities} />
       </Box>
 
