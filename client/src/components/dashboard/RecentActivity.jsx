@@ -1,7 +1,10 @@
+
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Avatar,
   Box,
+  Button,
   Card,
   CardContent,
   Divider,
@@ -13,8 +16,10 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import SwapHorizOutlinedIcon from "@mui/icons-material/SwapHorizOutlined";
 import CommentOutlinedIcon from "@mui/icons-material/CommentOutlined";
 import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
+import ArrowForwardOutlinedIcon from "@mui/icons-material/ArrowForwardOutlined";
 
 const activityIcons = {
+  BOARD_CREATED: <AddTaskOutlinedIcon />,
   CARD_CREATED: <AddTaskOutlinedIcon />,
   CARD_UPDATED: <EditOutlinedIcon />,
   CARD_MOVED: <SwapHorizOutlinedIcon />,
@@ -23,6 +28,17 @@ const activityIcons = {
 };
 
 const RecentActivity = ({ activities = [] }) => {
+  const navigate = useNavigate();
+
+  // Sort newest first and display only five activities.
+  const recentActivities = [...activities]
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt || 0).getTime();
+      const dateB = new Date(b.createdAt || 0).getTime();
+      return dateB - dateA;
+    })
+    .slice(0, 5);
+
   return (
     <Card
       sx={{
@@ -30,158 +46,168 @@ const RecentActivity = ({ activities = [] }) => {
         borderRadius: "14px",
         border: "1px solid #E8E3DE",
         boxShadow: "0 2px 8px rgba(63, 52, 44, 0.04)",
+        backgroundColor: "#FFFFFF",
       }}
     >
-      <CardContent sx={{ p: 3 }}>
-
+      <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
         {/* Header */}
-        <Typography
+        <Box
           sx={{
-            fontSize: "18px",
-            fontWeight: 700,
-            color: "#3F342C",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
             mb: 2,
           }}
         >
-          Recent Activity
-        </Typography>
-
-        {activities.length === 0 ? (
-          <Box
+          <Typography
             sx={{
-              py: 5,
-              textAlign: "center",
+              fontSize: "18px",
+              fontWeight: 700,
+              color: "#3F342C",
             }}
           >
-            <Typography
-              sx={{
-                fontSize: "14px",
-                color: "#99918B",
-              }}
-            >
+            Recent Activity
+          </Typography>
+
+          <Button
+            onClick={() => navigate("/activity")}
+            endIcon={<ArrowForwardOutlinedIcon />}
+            sx={{
+              color: "#A9744F",
+              textTransform: "none",
+              fontWeight: 600,
+              whiteSpace: "nowrap",
+              "&:hover": {
+                backgroundColor: "#F9F3EE",
+                color: "#8B5E3C",
+              },
+            }}
+          >
+            View All
+          </Button>
+        </Box>
+
+        {recentActivities.length === 0 ? (
+          <Box sx={{ py: 5, textAlign: "center" }}>
+            <Typography sx={{ fontSize: 14, color: "#99918B" }}>
               No recent activity
             </Typography>
           </Box>
         ) : (
           <Box>
-            {activities.map((activity, index) => (
-              <React.Fragment key={activity.id}>
+            {recentActivities.map((activity, index) => {
+              const userName =
+                activity.user?.name ||
+                activity.actor?.name ||
+                activity.userName ||
+                "User";
 
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                    py: 1.5,
-                  }}
-                >
+              const message =
+                activity.message ||
+                activity.description ||
+                activity.action ||
+                "performed an activity";
 
-                  {/* User Avatar */}
-                  <Avatar
-                    src={activity.user?.avatar || ""}
-                    alt={activity.user?.name || "User"}
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      backgroundColor: "#F4ECE6",
-                      color: "#A9744F",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {!activity.user?.avatar &&
-                      (
-                        activity.user?.name
-                          ?.charAt(0)
-                          ?.toUpperCase() || "U"
-                      )}
-                  </Avatar>
+              const avatar =
+                activity.user?.avatar ||
+                activity.actor?.avatar ||
+                "";
 
-                  {/* Activity Details */}
+              const activityId =
+                activity._id ||
+                activity.id ||
+                `${activity.type}-${activity.createdAt}-${index}`;
+
+              return (
+                <React.Fragment key={activityId}>
                   <Box
                     sx={{
-                      flex: 1,
-                      minWidth: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      py: 1.5,
                     }}
                   >
-                    <Typography
+                    <Avatar
+                      src={avatar}
+                      alt={userName}
                       sx={{
-                        fontSize: "14px",
-                        color: "#3F342C",
+                        width: 40,
+                        height: 40,
+                        backgroundColor: "#F4ECE6",
+                        color: "#A9744F",
+                        fontWeight: 600,
                       }}
                     >
-                      <strong>
-                        {activity.user?.name || "User"}
-                      </strong>{" "}
-                      {activity.message}
-                    </Typography>
+                      {!avatar && userName.charAt(0).toUpperCase()}
+                    </Avatar>
 
-                    {/* Board */}
-                    {activity.board?.name && (
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Typography
                         sx={{
-                          fontSize: "12px",
-                          color: "#77716C",
+                          fontSize: 14,
+                          color: "#3F342C",
+                          overflowWrap: "anywhere",
+                        }}
+                      >
+                        <Box component="span" sx={{ fontWeight: 700 }}>
+                          {userName}
+                        </Box>{" "}
+                        {message}
+                      </Typography>
+
+                      {activity.board?.name && (
+                        <Typography
+                          sx={{
+                            fontSize: 12,
+                            color: "#77716C",
+                            mt: 0.5,
+                          }}
+                        >
+                          Board: {activity.board.name}
+                        </Typography>
+                      )}
+
+                      <Typography
+                        sx={{
+                          fontSize: 12,
+                          color: "#99918B",
                           mt: 0.5,
                         }}
                       >
-                        Board: {activity.board.name}
+                        {activity.createdAt &&
+                        !Number.isNaN(new Date(activity.createdAt).getTime())
+                          ? new Date(activity.createdAt).toLocaleString()
+                          : ""}
                       </Typography>
-                    )}
+                    </Box>
 
-                    {/* Date */}
-                    <Typography
+                    <Box
                       sx={{
-                        fontSize: "12px",
-                        color: "#99918B",
-                        mt: 0.5,
+                        width: 38,
+                        height: 38,
+                        borderRadius: "10px",
+                        backgroundColor: "#F4ECE6",
+                        color: "#A9744F",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
                       }}
                     >
-                      {activity.createdAt
-                        ? new Date(
-                            activity.createdAt
-                          ).toLocaleString()
-                        : ""}
-                    </Typography>
+                      {activityIcons[activity.type] || (
+                        <EditOutlinedIcon />
+                      )}
+                    </Box>
                   </Box>
 
-                  {/* Activity Icon */}
-                  <Box
-                    sx={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: "10px",
-                      backgroundColor: "#F4ECE6",
-                      color: "#A9744F",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-
-                      transition: "all 0.2s ease",
-
-                      "&:hover": {
-                        backgroundColor: "#E8D8CC",
-                        color: "#8B5E3C",
-                      },
-                    }}
-                  >
-                    {activityIcons[activity.type] || (
-                      <EditOutlinedIcon />
-                    )}
-                  </Box>
-                </Box>
-
-                {/* Divider */}
-                {index < activities.length - 1 && (
-                  <Divider
-                    sx={{
-                      borderColor: "#EEE9E4",
-                    }}
-                  />
-                )}
-
-              </React.Fragment>
-            ))}
+                  {index < recentActivities.length - 1 && (
+                    <Divider sx={{ borderColor: "#EEE9E4" }} />
+                  )}
+                </React.Fragment>
+              );
+            })}
           </Box>
         )}
       </CardContent>

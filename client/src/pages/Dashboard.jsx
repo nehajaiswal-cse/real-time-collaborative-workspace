@@ -36,6 +36,10 @@ import {
   createWorkspace,
 } from "../api/workspaceApi";
 
+import { getActivities } from "../api/activityApi.js";
+import WorkspaceDocuments from "../components/documents/WorkspaceDocuments";
+import { getDashboardData, getBoards } from "../api/dashboardApi";
+import { getMyWorkspaces, createWorkspace } from "../api/workspaceApi";
 import { createBoard } from "../services/boardService";
 
 const Dashboard = () => {
@@ -229,6 +233,21 @@ const Dashboard = () => {
   const handleCreateWorkspace = async (
     event
   ) => {
+  useEffect(() => {
+  const loadRecentActivity = async () => {
+    try {
+      const data = await getActivities();
+      setActivities(data);
+    } catch (error) {
+      console.error("Failed to load recent activities:", error);
+      setActivities([]);
+    }
+  };
+
+  loadRecentActivity();
+}, []);
+
+  const handleCreateBoardSubmit = async (event) => {
     event.preventDefault();
 
     const name = workspaceName.trim();
