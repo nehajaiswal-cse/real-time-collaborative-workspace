@@ -19,6 +19,7 @@ import OverviewCards from "../components/dashboard/OverviewCards.jsx";
 import BoardsSection from "../components/dashboard/BoardsSection.jsx";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import WorkspaceChat from "../components/chat/WorkspaceChat";
+import { getActivities } from "../api/activityApi.js";
 import WorkspaceDocuments from "../components/documents/WorkspaceDocuments";
 import { getDashboardData, getBoards } from "../api/dashboardApi";
 import { getMyWorkspaces, createWorkspace } from "../api/workspaceApi";
@@ -72,6 +73,7 @@ const Dashboard = () => {
   };
 
   // Load workspaces first, then load boards for the selected workspace.
+  
   useEffect(() => {
     let cancelled = false;
 
@@ -157,6 +159,20 @@ const Dashboard = () => {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+  const loadRecentActivity = async () => {
+    try {
+      const data = await getActivities();
+      setActivities(data);
+    } catch (error) {
+      console.error("Failed to load recent activities:", error);
+      setActivities([]);
+    }
+  };
+
+  loadRecentActivity();
+}, []);
 
   const handleCreateBoardSubmit = async (event) => {
     event.preventDefault();
