@@ -113,8 +113,9 @@ setWorkspaceError("");
 
 try {
   const result = await getMyWorkspaces();
-  const list = Array.isArray(result) ? result : [];
-
+  const list = Array.isArray(result)
+  ? result.filter((item) => item && item._id)
+  : [];
   setWorkspaces(list);
 
   setWorkspaceId((previousId) => {
