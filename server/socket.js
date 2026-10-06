@@ -35,6 +35,29 @@ export const initSocket = (server) => {
       console.log(`Socket ${socket.id} left workspace:${workspaceId}`);
     });
 
+  
+    // BOARD ROOM
+
+    socket.on("board:join", (boardId) => {
+      if (!boardId) return;
+
+      socket.join(`board:${boardId}`);
+
+      console.log(
+        `Socket ${socket.id} joined board:${boardId}`
+      );
+    });
+
+    socket.on("board:leave", (boardId) => {
+      if (!boardId) return;
+
+      socket.leave(`board:${boardId}`);
+
+      console.log(
+        `Socket ${socket.id} left board:${boardId}`
+      );
+    });
+
     // Real-time chat message
     socket.on("chat:send", ({ workspaceId, message }) => {
       if (!workspaceId || !message) {

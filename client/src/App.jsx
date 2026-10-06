@@ -6,6 +6,7 @@ import Register from "./pages/Register.jsx";
 import MyBoards from "./pages/MyBoards.jsx";
 import BoardDetail from "./pages/BoardDetail.jsx";
 import Members from "./pages/Members.jsx";
+import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import Activity from "./pages/Activity.jsx";
 import Settings from "./pages/Settings.jsx";
  
@@ -20,12 +21,17 @@ const App = () => {
       {/* Public routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+       
+      <Route element={<ProtectedRoute />}>
+
 
       {/* Application routes */}
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/myboards" element={<MyBoards />} />
       <Route path="/boards/:boardId" element={<BoardDetail />} />
       <Route path="/members" element={<Members />} />
+
+      </Route>
       <Route path="/activity" element={<Activity />} />
       <Route path="/settings" element={<Settings />} />
     </Routes>
