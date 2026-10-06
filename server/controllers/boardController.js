@@ -1,5 +1,6 @@
 import Board from "../models/board.js";
 import WorkspaceMember from "../models/workspaceMember.js";
+import createActivity from "../utils/createActivity.js";
 
 // Create Board
 export const createBoard = async (req, res) => {
@@ -33,6 +34,14 @@ export const createBoard = async (req, res) => {
     const populatedBoard = await Board.findById(board._id)
       .populate("workspace", "name")
       .populate("createdBy", "name email");
+
+    await createActivity({
+     type: "BOARD_CREATED",
+     userId: req.user.id,
+     workspaceId: workspaceId,
+     boardId: board._id,
+     message: `created board "${board.name}"`,
+});  
 
     res.status(201).json({
       message: "Board created successfully",
