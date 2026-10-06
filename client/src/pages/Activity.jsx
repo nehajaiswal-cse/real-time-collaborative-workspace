@@ -12,8 +12,10 @@ import ActivityHeader from "../components/activity/ActivityHeader.jsx";
 import ActivityFilters from "../components/activity/ActivityFilters.jsx";
 import ActivityList from "../components/activity/ActivityList.jsx";
 import { getActivities } from "../api/activityApi.js";
+import { useWorkspace } from "../context/workspaceContext.jsx";
 
 const Activity = () => {
+    const { selectedWorkspace } = useWorkspace();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activities, setActivities] = useState([]);
   const [search, setSearch] = useState("");
@@ -22,11 +24,16 @@ const Activity = () => {
   const [error, setError] = useState("");
 
   const loadActivities = useCallback(async () => {
+     if (!selectedWorkspace?._id) {
+    setActivities([]);
+    setLoading(false);
+    return;
+  }
     setLoading(true);
     setError("");
 
     try {
-      const data = await getActivities();
+      const data = await getActivities(selectedWorkspace._id);
       setActivities(data);
     } catch (err) {
       console.error("Failed to load activities:", err);
@@ -48,7 +55,7 @@ const Activity = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedWorkspace?._id]);
 
   useEffect(() => {
     loadActivities();
