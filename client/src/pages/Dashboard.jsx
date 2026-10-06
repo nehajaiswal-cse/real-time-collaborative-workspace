@@ -37,17 +37,15 @@ import {
 } from "../api/workspaceApi";
 
 import { getActivities } from "../api/activityApi.js";
-import WorkspaceDocuments from "../components/documents/WorkspaceDocuments";
-import { getDashboardData, getBoards } from "../api/dashboardApi";
-import { getMyWorkspaces, createWorkspace } from "../api/workspaceApi";
 import { createBoard } from "../services/boardService";
 
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  // -----------------------------
+  // =====================================================
   // GENERAL STATE
-  // -----------------------------
+  // =====================================================
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activities, setActivities] = useState([]);
   const [boards, setBoards] = useState([]);
@@ -61,9 +59,10 @@ const Dashboard = () => {
 
   const [error, setError] = useState("");
 
-  // -----------------------------
+  // =====================================================
   // USER
-  // -----------------------------
+  // =====================================================
+
   const [user] = useState(() => {
     try {
       return JSON.parse(
@@ -74,9 +73,10 @@ const Dashboard = () => {
     }
   });
 
-  // -----------------------------
+  // =====================================================
   // CREATE WORKSPACE
-  // -----------------------------
+  // =====================================================
+
   const [createWorkspaceOpen, setCreateWorkspaceOpen] =
     useState(false);
 
@@ -86,9 +86,10 @@ const Dashboard = () => {
   const [creatingWorkspace, setCreatingWorkspace] =
     useState(false);
 
-  // -----------------------------
+  // =====================================================
   // CREATE BOARD
-  // -----------------------------
+  // =====================================================
+
   const [createBoardOpen, setCreateBoardOpen] =
     useState(false);
 
@@ -97,9 +98,10 @@ const Dashboard = () => {
 
   const [creating, setCreating] = useState(false);
 
-  // -----------------------------
+  // =====================================================
   // MENU
-  // -----------------------------
+  // =====================================================
+
   const handleMenuClick = () => {
     setSidebarOpen((prev) => !prev);
   };
@@ -107,6 +109,7 @@ const Dashboard = () => {
   // =====================================================
   // LOAD WORKSPACES + BOARDS
   // =====================================================
+
   useEffect(() => {
     let cancelled = false;
 
@@ -131,6 +134,7 @@ const Dashboard = () => {
         // ---------------------------------------------
         // NO WORKSPACE
         // ---------------------------------------------
+
         if (validWorkspaces.length === 0) {
           setActiveWorkspaceId("");
           setBoards([]);
@@ -140,6 +144,7 @@ const Dashboard = () => {
         // ---------------------------------------------
         // SELECT FIRST WORKSPACE
         // ---------------------------------------------
+
         const workspaceId =
           validWorkspaces[0]?._id ||
           validWorkspaces[0]?.id ||
@@ -155,6 +160,7 @@ const Dashboard = () => {
         // ---------------------------------------------
         // LOAD BOARDS
         // ---------------------------------------------
+
         const boardList =
           await getBoards(workspaceId);
 
@@ -193,61 +199,35 @@ const Dashboard = () => {
   }, []);
 
   // =====================================================
-  // LOAD ACTIVITY
+  // LOAD RECENT ACTIVITY
   // =====================================================
+
   useEffect(() => {
-    let cancelled = false;
-
-    const loadActivity = async () => {
+    const loadRecentActivity = async () => {
       try {
-        const data =
-          await getDashboardData();
+        const data = await getActivities();
 
-        if (!cancelled) {
-          setActivities(
-            data?.activities || []
-          );
-        }
-      } catch (err) {
+        setActivities(
+          Array.isArray(data) ? data : []
+        );
+      } catch (error) {
         console.error(
-          "Failed to load dashboard activity:",
-          err
+          "Failed to load recent activities:",
+          error
         );
 
-        if (!cancelled) {
-          setActivities([]);
-        }
+        setActivities([]);
       }
     };
 
-    loadActivity();
-
-    return () => {
-      cancelled = true;
-    };
+    loadRecentActivity();
   }, []);
 
   // =====================================================
   // CREATE WORKSPACE
   // =====================================================
-  const handleCreateWorkspace = async (
-    event
-  ) => {
-  useEffect(() => {
-  const loadRecentActivity = async () => {
-    try {
-      const data = await getActivities();
-      setActivities(data);
-    } catch (error) {
-      console.error("Failed to load recent activities:", error);
-      setActivities([]);
-    }
-  };
 
-  loadRecentActivity();
-}, []);
-
-  const handleCreateBoardSubmit = async (event) => {
+  const handleCreateWorkspace = async (event) => {
     event.preventDefault();
 
     const name = workspaceName.trim();
@@ -321,6 +301,7 @@ const Dashboard = () => {
   // =====================================================
   // CREATE BOARD
   // =====================================================
+
   const handleCreateBoard = () => {
     setError("");
     setNewBoardName("");
@@ -390,6 +371,7 @@ const Dashboard = () => {
   // =====================================================
   // BOARD ACTIONS
   // =====================================================
+
   const handleViewAll = () => {
     navigate("/myboards");
   };
@@ -411,12 +393,14 @@ const Dashboard = () => {
   // =====================================================
   // USER NAME
   // =====================================================
+
   const userName =
     user?.name || "User";
 
   // =====================================================
   // UI
   // =====================================================
+
   return (
     <Box
       sx={{
@@ -426,14 +410,17 @@ const Dashboard = () => {
       }}
     >
       {/* NAVBAR */}
+
       <Navbar
         onMenuClick={handleMenuClick}
       />
 
       {/* SIDEBAR */}
+
       <Sidebar open={sidebarOpen} />
 
       {/* MAIN CONTENT */}
+
       <Box
         component="main"
         sx={{
@@ -451,6 +438,7 @@ const Dashboard = () => {
         }}
       >
         {/* ERROR */}
+
         {error && (
           <Alert
             severity="error"
@@ -466,6 +454,7 @@ const Dashboard = () => {
         {/* =================================================
             NO WORKSPACE
         ================================================= */}
+
         {!loadingBoards &&
         workspaces.length === 0 ? (
           <Box
@@ -493,6 +482,7 @@ const Dashboard = () => {
               }}
             >
               {/* ICON */}
+
               <Box
                 sx={{
                   width: 80,
@@ -521,6 +511,7 @@ const Dashboard = () => {
               </Box>
 
               {/* TITLE */}
+
               <Typography
                 variant="h4"
                 sx={{
@@ -533,6 +524,7 @@ const Dashboard = () => {
               </Typography>
 
               {/* DESCRIPTION */}
+
               <Typography
                 sx={{
                   color: "#718096",
@@ -548,6 +540,7 @@ const Dashboard = () => {
               </Typography>
 
               {/* INPUT */}
+
               <TextField
                 fullWidth
                 placeholder="Workspace name"
@@ -594,6 +587,7 @@ const Dashboard = () => {
               />
 
               {/* CREATE */}
+
               <Button
                 fullWidth
                 type="submit"
@@ -646,8 +640,10 @@ const Dashboard = () => {
           /* =================================================
              NORMAL DASHBOARD
           ================================================= */
+
           <>
             {/* HEADER + CREATE WORKSPACE */}
+
             <Box
               sx={{
                 display: "flex",
@@ -668,6 +664,7 @@ const Dashboard = () => {
               </Box>
 
               {/* CREATE WORKSPACE BUTTON */}
+
               <Button
                 variant="contained"
                 startIcon={
@@ -704,9 +701,11 @@ const Dashboard = () => {
             </Box>
 
             {/* OVERVIEW */}
+
             <OverviewCards />
 
             {/* BOARDS */}
+
             <BoardsSection
               boards={boards}
               loading={
@@ -724,6 +723,7 @@ const Dashboard = () => {
             />
 
             {/* CHAT */}
+
             {activeWorkspaceId && (
               <Box
                 sx={{ mt: 3 }}
@@ -737,6 +737,7 @@ const Dashboard = () => {
             )}
 
             {/* ACTIVITY */}
+
             <RecentActivity
               activities={
                 activities
@@ -749,6 +750,7 @@ const Dashboard = () => {
       {/* =================================================
           CREATE WORKSPACE DIALOG
       ================================================= */}
+
       <Dialog
         open={
           createWorkspaceOpen
@@ -857,6 +859,7 @@ const Dashboard = () => {
       {/* =================================================
           CREATE BOARD DIALOG
       ================================================= */}
+
       <Dialog
         open={createBoardOpen}
         onClose={() => {

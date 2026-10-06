@@ -86,11 +86,11 @@ export const createCard = async (req, res) => {
 
     io.to(`workspace:${board.workspace}`).emit("card:created", populatedCard);
 
-    await createActivity({
+   await createActivity({
   type: "CARD_CREATED",
   userId: req.user.id,
-  workspaceId: workspaceId,
-  boardId: boardId,
+  workspaceId: board.workspace,
+  boardId: board._id,
   cardId: card._id,
   message: `created card "${card.title}"`,
 });
@@ -311,8 +311,8 @@ export const updateCard = async (req, res) => {
     await createActivity({
   type: "CARD_UPDATED",
   userId: req.user.id,
-  workspaceId,
-  boardId,
+  workspaceId: board.workspace,
+  boardId: board._id,
   cardId: card._id,
   message: `updated card "${card.title}"`,
 });

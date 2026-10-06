@@ -30,13 +30,34 @@ export const WorkspaceProvider = ({ children }) => {
         ? data
         : data?.workspaces || [];
 
-      console.log("WORKSPACES FROM DATABASE:", workspaceList);
+      // ==========================================
+      // Remove invalid/null workspaces
+      // ==========================================
 
-      setWorkspaces(workspaceList);
+      const validWorkspaces = workspaceList.filter(
+        (workspace) =>
+          workspace &&
+          (workspace._id || workspace.id)
+      );
 
-      if (workspaceList.length === 0) {
+      console.log(
+        "WORKSPACES FROM DATABASE:",
+        validWorkspaces
+      );
+
+      setWorkspaces(validWorkspaces);
+
+      // ==========================================
+      // No workspaces
+      // ==========================================
+
+      if (validWorkspaces.length === 0) {
         setSelectedWorkspace(null);
-        localStorage.removeItem("selectedWorkspaceId");
+
+        localStorage.removeItem(
+          "selectedWorkspaceId"
+        );
+
         return;
       }
 
@@ -45,21 +66,32 @@ export const WorkspaceProvider = ({ children }) => {
       // ==========================================
 
       const savedWorkspaceId =
-        localStorage.getItem("selectedWorkspaceId");
-
-      if (savedWorkspaceId) {
-        const existingWorkspace = workspaceList.find(
-          (workspace) =>
-            workspace._id === savedWorkspaceId
+        localStorage.getItem(
+          "selectedWorkspaceId"
         );
 
+      if (savedWorkspaceId) {
+        const existingWorkspace =
+          validWorkspaces.find(
+            (workspace) =>
+              String(
+                workspace._id || workspace.id
+              ) === String(savedWorkspaceId)
+          );
+
         if (existingWorkspace) {
-          setSelectedWorkspace(existingWorkspace);
+          setSelectedWorkspace(
+            existingWorkspace
+          );
+
+          const existingId =
+            existingWorkspace._id ||
+            existingWorkspace.id;
 
           console.log(
             "RESTORED WORKSPACE:",
             existingWorkspace.name,
-            existingWorkspace._id
+            existingId
           );
 
           return;
@@ -70,24 +102,38 @@ export const WorkspaceProvider = ({ children }) => {
       // Default workspace
       // ==========================================
 
-      const firstWorkspace = workspaceList[0];
+      const firstWorkspace =
+        validWorkspaces[0];
 
-      setSelectedWorkspace(firstWorkspace);
+      const firstWorkspaceId =
+        firstWorkspace._id ||
+        firstWorkspace.id;
+
+      setSelectedWorkspace(
+        firstWorkspace
+      );
 
       localStorage.setItem(
         "selectedWorkspaceId",
-        firstWorkspace._id
+        firstWorkspaceId
       );
 
       console.log(
         "DEFAULT WORKSPACE:",
         firstWorkspace.name,
-        firstWorkspace._id
+        firstWorkspaceId
       );
     } catch (error) {
       console.error(
         "Failed to load workspaces:",
         error
+      );
+
+      setWorkspaces([]);
+      setSelectedWorkspace(null);
+
+      localStorage.removeItem(
+        "selectedWorkspaceId"
       );
     } finally {
       setLoading(false);
@@ -107,19 +153,24 @@ export const WorkspaceProvider = ({ children }) => {
   // ==========================================
 
   const switchWorkspace = (workspace) => {
-    if (!workspace?._id) return;
+    if (!workspace) return;
+
+    const workspaceId =
+      workspace._id || workspace.id;
+
+    if (!workspaceId) return;
 
     console.log(
       "SWITCHING WORKSPACE:",
       workspace.name,
-      workspace._id
+      workspaceId
     );
 
     setSelectedWorkspace(workspace);
 
     localStorage.setItem(
       "selectedWorkspaceId",
-      workspace._id
+      workspaceId
     );
   };
 
@@ -143,7 +194,8 @@ export const WorkspaceProvider = ({ children }) => {
 // ==========================================
 
 export const useWorkspace = () => {
-  const context = useContext(WorkspaceContext);
+  const context =
+    useContext(WorkspaceContext);
 
   if (!context) {
     throw new Error(
