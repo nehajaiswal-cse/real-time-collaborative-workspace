@@ -44,29 +44,29 @@ export const createWorkspace = async (req, res) => {
 export const getMyWorkspaces = async (req, res) => {
   try {
     const memberships = await WorkspaceMember.find({
-      user: req.user.id
+      user: req.user.id,
     })
       .populate({
         path: "workspace",
         populate: {
           path: "owner",
-          select: "name email"
-        }
+          select: "name email",
+        },
       })
       .sort({ createdAt: -1 });
 
-    const workspaces = memberships.map(
-      (membership) => membership.workspace
-    );
+    const workspaces = memberships
+      .map((membership) => membership.workspace)
+      .filter((workspace) => workspace !== null);
 
     res.json({
-      workspaces
+      workspaces,
     });
   } catch (error) {
     console.error("Get workspaces error:", error);
 
     res.status(500).json({
-      message: "Server error"
+      message: "Server error",
     });
   }
 };

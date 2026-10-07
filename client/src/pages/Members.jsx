@@ -221,7 +221,7 @@ export default function Members() {
             disabled={!workspaces.length}
           >
             {workspaces.map((workspace) => (
-              <MenuItem key={workspace._id} value={workspace._id}>
+              <MenuItem key={workspace.id} value={workspace._id}>
                 {workspace.name}
               </MenuItem>
             ))}
