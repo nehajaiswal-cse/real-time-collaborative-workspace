@@ -106,7 +106,6 @@ const Settings = () => {
     } catch (error) {
       console.error("Failed to load profile:", error);
 
-<<<<<<< HEAD
       setProfileError(
         getErrorMessage(error, {
           unauthorized: "Your session may have expired. Please log in again.",
@@ -116,53 +115,6 @@ const Settings = () => {
       );
     } finally {
       setProfileLoading(false);
-=======
-try {
-  const result = await getCurrentUser();
-  setUser(result);
-} catch (error) {
-  console.error("Failed to load profile:", error);
-
-  const status = error.response?.status;
-
-  if (status === 401) {
-    setProfileError(
-      "Your session may have expired. Please log in again."
-    );
-  } else if (status === 404) {
-    setProfileError("The profile endpoint was not found.");
-  } else if (!error.response) {
-    setProfileError(
-      "Cannot connect to the backend. Check that the server is running."
-    );
-  } else {
-    setProfileError(
-      error.response?.data?.message || "Unable to load your profile."
-    );
-  }
-} finally {
-  setProfileLoading(false);
-}
-
-
-}, []);
-
-const loadWorkspaces = useCallback(async () => {
-setWorkspaceLoading(true);
-setWorkspaceError("");
-
-
-try {
-  const result = await getMyWorkspaces();
-  const list = Array.isArray(result)
-  ? result.filter((item) => item && item._id)
-  : [];
-  setWorkspaces(list);
-
-  setWorkspaceId((previousId) => {
-    if (list.some((item) => item._id === previousId)) {
-      return previousId;
->>>>>>> 82310ed0a83a9e2c50b75b3247110807604dc103
     }
   }, []);
 
