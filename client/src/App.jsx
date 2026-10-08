@@ -9,6 +9,7 @@ import Members from "./pages/Members.jsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import Activity from "./pages/Activity.jsx";
 import Settings from "./pages/Settings.jsx";
+import Profile from "./pages/Profile.jsx";
  
 
 
@@ -34,6 +35,7 @@ const App = () => {
       </Route>
       <Route path="/activity" element={<Activity />} />
       <Route path="/settings" element={<Settings />} />
+      <Route path="/profile" element={<Profile />} />
     </Routes>
   );
 };

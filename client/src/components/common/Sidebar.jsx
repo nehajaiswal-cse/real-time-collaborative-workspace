@@ -24,6 +24,7 @@ import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import Business from "@mui/icons-material/Business";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 
 import { useState } from "react";
 import { useWorkspace } from "../../context/workspaceContext";
@@ -70,6 +71,11 @@ const Sidebar = ({ open }) => {
       name: "Settings",
       icon: <Settings />,
       path: "/settings",
+    },
+    {
+      name: "Profile",
+      path: "/profile",
+      icon: <PersonOutlineOutlinedIcon />,
     },
   ];
 
@@ -149,7 +155,7 @@ const Sidebar = ({ open }) => {
           title={
             !open
               ? selectedWorkspace?.name ||
-                "Workspace"
+              "Workspace"
               : ""
           }
           placement="right"
@@ -301,7 +307,7 @@ const Sidebar = ({ open }) => {
                     minWidth: "36px",
                     color:
                       selectedWorkspace?._id ===
-                      workspace._id
+                        workspace._id
                         ? PRIMARY_COLOR
                         : TEXT_COLOR,
                   }}
@@ -315,7 +321,7 @@ const Sidebar = ({ open }) => {
                     fontSize: "13px",
                     fontWeight:
                       selectedWorkspace?._id ===
-                      workspace._id
+                        workspace._id
                         ? 600
                         : 400,
                   }}
