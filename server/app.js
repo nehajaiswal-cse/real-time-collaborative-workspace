@@ -10,6 +10,7 @@ import cardRoutes from "./routes/cardRoutes.js";
 import workspaceMemberRoutes from "./routes/workspaceMemberRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -33,6 +34,8 @@ app.get("/", (req, res) => {
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+
 app.use("/api/workspaces", workspaceRoutes);
 app.use("/api/boards", boardRoutes);
 app.use("/api/lists", listRoutes);

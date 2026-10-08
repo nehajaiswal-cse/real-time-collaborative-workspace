@@ -106,3 +106,69 @@ export const getWorkspaceById = async (req, res) => {
     });
   }
 };
+
+export const updateWorkspace = async (req, res) => {
+  try {
+    const { name, description } = req.body;
+
+    const workspace = await Workspace.findById(req.params.id);
+
+    if (!workspace) {
+      return res.status(404).json({
+        message: "Workspace not found"
+      });
+    }
+
+    // Check membership
+    const membership = await WorkspaceMember.findOne({
+      workspace: workspace._id,
+      user: req.user.id
+    });
+
+    if (!membership) {
+      return res.status(403).json({
+        message: "You are not a member of this workspace"
+      });
+    }
+
+    // Only owner/admin can update workspace
+    if (
+      membership.role !== "owner" &&
+      membership.role !== "admin"
+    ) {
+      return res.status(403).json({
+        message: "You do not have permission to update this workspace"
+      });
+    }
+
+    if (name !== undefined) {
+      if (name.trim().length < 2) {
+        return res.status(400).json({
+          message: "Workspace name must be at least 2 characters"
+        });
+      }
+
+      workspace.name = name.trim();
+    }
+
+    if (description !== undefined) {
+      workspace.description = description.trim();
+    }
+
+    await workspace.save();
+
+    const updatedWorkspace = await Workspace.findById(workspace._id)
+      .populate("owner", "name email");
+
+    res.json({
+      message: "Workspace updated successfully",
+      workspace: updatedWorkspace
+    });
+  } catch (error) {
+    console.error("Update workspace error:", error);
+
+    res.status(500).json({
+      message: "Server error"
+    });
+  }
+};

@@ -1,5 +1,6 @@
 import Message from "../models/message.js";
 import WorkspaceMember from "../models/workspaceMember.js";
+import { getIO } from "../socket.js";
 
 // Get workspace messages
 export const getWorkspaceMessages = async (req, res) => {
@@ -23,12 +24,18 @@ export const getWorkspaceMessages = async (req, res) => {
       .populate("sender", "name email")
       .sort({ createdAt: 1 });
 
-    res.json({ messages });
+    res.json({
+      messages,
+    });
   } catch (error) {
     console.error("Get messages error:", error);
-    res.status(500).json({ message: "Server error" });
+
+    res.status(500).json({
+      message: "Server error",
+    });
   }
 };
+
 
 // Send a workspace message
 export const createMessage = async (req, res) => {
@@ -62,11 +69,22 @@ export const createMessage = async (req, res) => {
     const populatedMessage = await Message.findById(message._id)
       .populate("sender", "name email");
 
+    // REAL-TIME MESSAGE
+    const io = getIO();
+
+    io.to(`workspace:${workspaceId}`).emit(
+      "chat:message",
+      populatedMessage
+    );
+
     res.status(201).json({
       message: populatedMessage,
     });
   } catch (error) {
     console.error("Create message error:", error);
-    res.status(500).json({ message: "Server error" });
+
+    res.status(500).json({
+      message: "Server error",
+    });
   }
 };
