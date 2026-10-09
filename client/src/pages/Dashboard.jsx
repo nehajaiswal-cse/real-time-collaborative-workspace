@@ -26,6 +26,8 @@ import BoardsSection from "../components/dashboard/BoardsSection.jsx";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import WorkspaceChat from "../components/chat/WorkspaceChat";
 
+import { useWorkspace } from "../context/workspaceContext";
+
 import {
   getDashboardData,
   getBoards,
@@ -58,6 +60,10 @@ const Dashboard = () => {
     useState(true);
 
   const [error, setError] = useState("");
+
+  const { selectedWorkspace, loading: workspacesLoading } = useWorkspace();
+
+const workspaceId = selectedWorkspace?._id || selectedWorkspace?.id;
 
   // =====================================================
   // USER
@@ -180,8 +186,8 @@ const Dashboard = () => {
 
           setError(
             err.response?.data?.message ||
-              err.message ||
-              "Unable to load your workspace."
+            err.message ||
+            "Unable to load your workspace."
           );
         }
       } finally {
@@ -198,30 +204,43 @@ const Dashboard = () => {
     };
   }, []);
 
+
+  
   // =====================================================
   // LOAD RECENT ACTIVITY
   // =====================================================
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadRecentActivity = async () => {
-      try {
-        const data = await getActivities();
-
-        setActivities(
-          Array.isArray(data) ? data : []
-        );
-      } catch (error) {
-        console.error(
-          "Failed to load recent activities:",
-          error
-        );
-
+      if (!activeWorkspaceId) {
         setActivities([]);
+        return;
+      }
+
+      try {
+        const data = await getActivities(activeWorkspaceId);
+
+        if (!cancelled) {
+          setActivities(
+            Array.isArray(data) ? data.slice(0, 5) : []
+          );
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error("Failed to load recent activities:", err);
+          setActivities([]);
+        }
       }
     };
 
     loadRecentActivity();
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeWorkspaceId]);
 
   // =====================================================
   // CREATE WORKSPACE
@@ -290,8 +309,8 @@ const Dashboard = () => {
 
       setError(
         err.response?.data?.message ||
-          err.message ||
-          "Failed to create workspace."
+        err.message ||
+        "Failed to create workspace."
       );
     } finally {
       setCreatingWorkspace(false);
@@ -360,8 +379,8 @@ const Dashboard = () => {
 
       setError(
         err.response?.data?.message ||
-          err.message ||
-          "Failed to create board. Please try again."
+        err.message ||
+        "Failed to create board. Please try again."
       );
     } finally {
       setCreating(false);
@@ -456,7 +475,7 @@ const Dashboard = () => {
         ================================================= */}
 
         {!loadingBoards &&
-        workspaces.length === 0 ? (
+          workspaces.length === 0 ? (
           <Box
             sx={{
               minHeight:
@@ -560,29 +579,29 @@ const Dashboard = () => {
                   mb: 1.5,
 
                   "& .MuiOutlinedInput-root":
-                    {
-                      borderRadius:
-                        "12px",
-                      bgcolor:
-                        "#FFFFFF",
+                  {
+                    borderRadius:
+                      "12px",
+                    bgcolor:
+                      "#FFFFFF",
 
-                      "& fieldset": {
-                        borderColor:
-                          "#D7DEE8",
-                      },
-
-                      "&:hover fieldset":
-                        {
-                          borderColor:
-                            "#3B82F6",
-                        },
-
-                      "&.Mui-focused fieldset":
-                        {
-                          borderColor:
-                            "#3B82F6",
-                        },
+                    "& fieldset": {
+                      borderColor:
+                        "#D7DEE8",
                     },
+
+                    "&:hover fieldset":
+                    {
+                      borderColor:
+                        "#3B82F6",
+                    },
+
+                    "&.Mui-focused fieldset":
+                    {
+                      borderColor:
+                        "#3B82F6",
+                    },
+                  },
                 }}
               />
 
@@ -701,9 +720,7 @@ const Dashboard = () => {
             </Box>
 
             {/* OVERVIEW */}
-
-            <OverviewCards />
-
+            <OverviewCards workspaceId={workspaceId} />
             {/* BOARDS */}
 
             <BoardsSection

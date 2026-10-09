@@ -1,4 +1,3 @@
-// src/api/boardApi.js
 
 import axiosInstance from "./axiosInstance";
 
@@ -33,6 +32,15 @@ export const updateBoard = async (boardId, boardData) => {
 
 export const deleteBoard = async (boardId) => {
   const response = await axiosInstance.delete(`/boards/${boardId}`);
+
+  return response.data;
+};
+
+
+export const getWorkspaceStats = async (workspaceId) => {
+  const response = await axiosInstance.get(
+    `/boards/workspace/${workspaceId}/stats`
+  );
 
   return response.data;
 };

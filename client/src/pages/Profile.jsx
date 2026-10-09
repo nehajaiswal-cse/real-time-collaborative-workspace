@@ -1,5 +1,3 @@
-// src/pages/Profile.jsx
-
 import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
