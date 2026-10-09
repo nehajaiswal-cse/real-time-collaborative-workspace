@@ -6,6 +6,8 @@ const BoardsGrid = ({
   boards = [],
   onOpenBoard,
   onBoardMenuClick,
+  onUpdated,
+  onDeleted,
 }) => {
   if (boards.length === 0) {
     return (
@@ -57,6 +59,8 @@ const BoardsGrid = ({
           board={board}
           onOpen={onOpenBoard}
           onMenuClick={onBoardMenuClick}
+          onUpdated={onUpdated}
+          onDeleted={onDeleted}
         />
       ))}
     </Box>

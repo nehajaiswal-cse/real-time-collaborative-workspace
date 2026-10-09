@@ -1,7 +1,11 @@
 import Board from "../models/board.js";
 import WorkspaceMember from "../models/workspaceMember.js";
 import createActivity from "../utils/createActivity.js";
-
+import {
+  getCachedBoards,
+  cacheBoards,
+  invalidateWorkspaceBoards,
+} from "../utils/boardCache.js"
 // Create Board
 export const createBoard = async (req, res) => {
   try {
@@ -31,9 +35,13 @@ export const createBoard = async (req, res) => {
       createdBy: req.user.id
     });
 
+
+
     const populatedBoard = await Board.findById(board._id)
       .populate("workspace", "name")
       .populate("createdBy", "name email");
+
+    await invalidateWorkspaceBoards(workspaceId);  
 
     await createActivity({
       type: "BOARD_CREATED",
@@ -79,14 +87,23 @@ export const getWorkspaceBoards = async (req, res) => {
         message: "You are not a member of this workspace"
       });
     }
+  
+    const cachedBoards = await getCachedBoards(workspaceId);
 
-    //  console.log("membership:", membership);
+    if (cachedBoards !== null) {
+      console.log("Redis cache HIT:", workspaceId);
+      return res.json({ boards: cachedBoards });
+    }
 
     const boards = await Board.find({
       workspace: workspaceId
     })
       .populate("createdBy", "name email")
       .sort({ createdAt: -1 });
+
+      
+
+    await cacheBoards(workspaceId, boards);  
 
     res.json({
       boards
@@ -177,9 +194,13 @@ export const updateBoard = async (req, res) => {
 
     await board.save();
 
+    console.log("MongoDB saved name:", board.name);
     const updatedBoard = await Board.findById(board._id)
       .populate("workspace", "name")
       .populate("createdBy", "name email");
+
+    await invalidateWorkspaceBoards(board.workspace.toString());
+    console.log("Redis cache invalidated");
 
     res.json({
       message: "Board updated successfully",
@@ -221,6 +242,7 @@ export const deleteBoard = async (req, res) => {
     }
 
     await Board.findByIdAndDelete(id);
+    await invalidateWorkspaceBoards(board.workspace.toString());
 
     res.json({
       message: "Board deleted successfully"
