@@ -17,9 +17,7 @@ import Sidebar from "../components/common/Sidebar.jsx";
 import BoardsHeader from "../components/boards/BoardsHeader";
 import BoardsGrid from "../components/boards/BoardsGrid";
 
-import { getBoards } from "../api/dashboardApi";
-import { createWorkspace } from "../api/workspaceApi";
-import { createBoard } from "../services/boardService";
+import { getWorkspaceBoards ,createBoard,updateBoard } from "../api/boardApi.js";
 
 import { useWorkspace } from "../context/workspaceContext.jsx";
 
@@ -63,12 +61,18 @@ const MyBoards = () => {
           selectedWorkspace._id
         );
 
-        const boardList = await getBoards(
+        const boardList = await getWorkspaceBoards(
           selectedWorkspace._id
         );
         
 
-        setBoards(boardList || []);
+setBoards(
+  Array.isArray(boardList)
+    ? boardList
+    : Array.isArray(boardList?.boards)
+      ? boardList.boards
+      : []
+);
       } catch (error) {
         console.error(
           "Failed to load boards:",
@@ -114,6 +118,32 @@ const MyBoards = () => {
       navigate(`/boards/${board._id}`);
     }
   };
+  
+const handleBoardDeleted = (deletedBoardId) => {
+  setBoards((prevBoards) =>
+    prevBoards.filter((board) => board._id !== deletedBoardId)
+  );
+}  
+
+const handleBoardUpdated = (result) => {
+  console.log("Updated board response:", result);
+
+  // API response directly returns the board object
+  const updatedBoard = result?.board || result;
+
+  if (!updatedBoard?._id) {
+    console.error("Invalid board response:", result);
+    return;
+  }
+
+  setBoards((prevBoards) =>
+    prevBoards.map((board) =>
+      board._id === updatedBoard._id
+        ? { ...board, ...updatedBoard }
+        : board
+    )
+  );
+};
 
   const handleBoardMenuClick = (
     event,
@@ -144,8 +174,10 @@ const MyBoards = () => {
         selectedWorkspace._id
       );
 
+      const createdBoard = newBoard;
+
       setBoards((prev) => [
-        newBoard,
+        createdBoard,
         ...prev,
       ]);
 
@@ -232,6 +264,8 @@ const MyBoards = () => {
             onBoardMenuClick={
               handleBoardMenuClick
             }
+            onUpdated={handleBoardUpdated}
+            onDeleted={handleBoardDeleted}
           />
         )}
       </Box>

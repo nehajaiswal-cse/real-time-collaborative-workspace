@@ -84,7 +84,7 @@ export const getWorkspaceBoards = async (req, res) => {
         message: "You are not a member of this workspace"
       });
     }
-    
+  
     const cachedBoards = await getCachedBoards(workspaceId);
 
     if (cachedBoards !== null) {
@@ -97,6 +97,8 @@ export const getWorkspaceBoards = async (req, res) => {
     })
       .populate("createdBy", "name email")
       .sort({ createdAt: -1 });
+
+      
 
     await cacheBoards(workspaceId, boards);  
 
@@ -189,11 +191,13 @@ export const updateBoard = async (req, res) => {
 
     await board.save();
 
+    console.log("MongoDB saved name:", board.name);
     const updatedBoard = await Board.findById(board._id)
       .populate("workspace", "name")
       .populate("createdBy", "name email");
 
-    await invalidateWorkspaceBoards(workspaceId);  
+    await invalidateWorkspaceBoards(board.workspace.toString());
+    console.log("Redis cache invalidated");
 
     res.json({
       message: "Board updated successfully",
