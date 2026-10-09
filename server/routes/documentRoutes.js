@@ -6,16 +6,25 @@ import {
   updateDocument,
 } from "../controllers/documentController.js";
 
-import authMiddleware from "../middleware/authMiddleware.js";
+import authMiddleware from "../middleware/authmiddleware.js";
 
 const router = express.Router();
 
 router.use(authMiddleware);
 
-router.get("/workspace/:workspaceId", getWorkspaceDocuments);
+router.get(
+  "/workspace/:workspaceId",
+  getWorkspaceDocuments
+);
 
-router.post("/workspace/:workspaceId", createDocument);
+router.post(
+  "/workspace/:workspaceId",
+  createDocument
+);
 
-router.put("/:documentId", updateDocument);
+router.put(
+  "/:documentId",
+  updateDocument
+);
 
 export default router;

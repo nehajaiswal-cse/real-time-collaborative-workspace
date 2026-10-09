@@ -29,6 +29,18 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
       default: ""
+    },
+
+    preferences: {
+      emailNotifications: {
+        type: Boolean,
+        default: true
+      },
+
+      workspaceNotifications: {
+        type: Boolean,
+        default: true
+      }
     }
   },
   {
