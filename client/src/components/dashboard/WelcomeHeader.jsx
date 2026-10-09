@@ -1,3 +1,4 @@
+
 import { Box, Typography } from "@mui/material";
 import WbSunnyOutlinedIcon from "@mui/icons-material/WbSunnyOutlined";
 import NightsStayOutlinedIcon from "@mui/icons-material/NightsStayOutlined";
@@ -10,37 +11,16 @@ const WelcomeHeader = ({ userName = "User" }) => {
 
   if (currentHour >= 5 && currentHour < 12) {
     greeting = "Good Morning";
-    icon = (
-      <WbSunnyOutlinedIcon
-        sx={{
-          color: "#A9744F",
-          fontSize: 28,
-        }}
-      />
-    );
+    icon = <WbSunnyOutlinedIcon sx={{ color: "#A9744F", fontSize: 28 }} />;
   } else if (currentHour >= 12 && currentHour < 18) {
     greeting = "Good Afternoon";
-    icon = (
-      <WbSunnyOutlinedIcon
-        sx={{
-          color: "#A9744F",
-          fontSize: 28,
-        }}
-      />
-    );
+    icon = <WbSunnyOutlinedIcon sx={{ color: "#A9744F", fontSize: 28 }} />;
+  } else if (currentHour >= 18 && currentHour < 22) {
+    greeting = "Good Evening";
+    icon = <NightsStayOutlinedIcon sx={{ color: "#A9744F", fontSize: 28 }} />;
   } else {
-    greeting = currentHour >= 18 && currentHour < 22
-      ? "Good Evening"
-      : "Good Night";
-
-    icon = (
-      <NightsStayOutlinedIcon
-        sx={{
-          color: "#A9744F",
-          fontSize: 28,
-        }}
-      />
-    );
+    greeting = "Good Night";
+    icon = <NightsStayOutlinedIcon sx={{ color: "#A9744F", fontSize: 28 }} />;
   }
 
   return (

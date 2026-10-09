@@ -1,29 +1,41 @@
-import { Navigate, Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard.jsx";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import MyBoards from "./pages/MyBoards";
-import Members from "./pages/Members.jsx";
+import Login from "./pages/Login.jsx";
+import Register from "./pages/Register.jsx";
+import MyBoards from "./pages/MyBoards.jsx";
 import BoardDetail from "./pages/BoardDetail.jsx";
+import Members from "./pages/Members.jsx";
+import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
+import Activity from "./pages/Activity.jsx";
+import Settings from "./pages/Settings.jsx";
+ 
+
 
 const App = () => {
-  return (
-    <div>
-      <Routes>
-        {/* ================= PUBLIC ROUTES ================= */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+   return (
+    <Routes>
+      {/* Open Login when visiting the root URL */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* ================= USER ROUTES ================= */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/myboards" element={<MyBoards />} />
-        <Route path="/members" element={<Members />} />
-        <Route path="/boards/:boardId" element={<BoardDetail />} />
-      </Routes>
-    </div>
+      {/* Public routes */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+       
+      <Route element={<ProtectedRoute />}>
+
+
+      {/* Application routes */}
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/myboards" element={<MyBoards />} />
+      <Route path="/boards/:boardId" element={<BoardDetail />} />
+      <Route path="/members" element={<Members />} />
+
+      </Route>
+      <Route path="/activity" element={<Activity />} />
+      <Route path="/settings" element={<Settings />} />
+    </Routes>
   );
-};
+}
 
 
 export default App;
