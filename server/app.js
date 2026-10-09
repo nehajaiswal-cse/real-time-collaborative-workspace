@@ -11,11 +11,8 @@ import workspaceMemberRoutes from "./routes/workspaceMemberRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import activityRoutes from "./routes/activityRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
-<<<<<<< HEAD
 import commentRoutes from "./routes/commentRoutes.js"
-=======
 import userRoutes from "./routes/userRoutes.js";
->>>>>>> d8f1499722b0230c9affda37e192730055f0b6d2
 
 dotenv.config();
 
