@@ -5,6 +5,7 @@ import WorkspaceMember from "../models/workspaceMember.js";
 import User from "../models/user.js";
 import { getIO } from "../socket.js";
 import createActivity from "../utils/createActivity.js";
+import createNotification from "../utils/createNotification.js"
 
 // Create Card
 export const createCard = async (req, res) => {
@@ -94,6 +95,23 @@ export const createCard = async (req, res) => {
   cardId: card._id,
   message: `created card "${card.title}"`,
 });
+console.log("Assigned user:", assignedTo);
+console.log("Logged-in user:", req.user.id);
+console.log("Workspace:", board.workspace);
+
+
+if (assignedTo) {
+  await createNotification({
+    recipient: assignedTo,
+    sender: req.user.id,
+    workspace: board.workspace,
+    board: board._id,
+    cardId: card._id,
+    type: "card_assigned",
+    message: `${req.user.name || "A member"} assigned you to card "${card.title}"`,
+  });
+}
+
 
     res.status(201).json({
       message: "Card created successfully",

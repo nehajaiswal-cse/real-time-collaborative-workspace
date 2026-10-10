@@ -12,6 +12,7 @@ import messageRoutes from "./routes/messageRoutes.js";
 import activityRoutes from "./routes/activityRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js"
+import notificationRoute from "./routes/notificationRoute.js"
 
 dotenv.config();
 
@@ -49,5 +50,6 @@ app.use("/api/activities", activityRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/api/notifications", notificationRoute);
 
 export default app;

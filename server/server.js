@@ -6,6 +6,7 @@ import connectDB from "./config/db.js";
 import { initSocket } from "./socket.js";
 import { connectRedis } from "./config/redis.js";
 
+
 dotenv.config();
 
 connectDB();

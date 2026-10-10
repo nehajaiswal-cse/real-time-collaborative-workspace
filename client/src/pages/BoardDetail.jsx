@@ -38,6 +38,7 @@ import {
   updateComment,
   deleteComment,
 } from "../api/commentApi.js";
+import{getWorkspaceMembers} from "../api/workspaceApi.js";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -60,6 +61,9 @@ const BoardDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [workspaceMembers, setWorkspaceMembers] = useState([]);
+const [membersLoading, setMembersLoading] = useState(false);
+
   // Dialog state for adding/editing cards and lists
   const [newListOpen, setNewListOpen] = useState(false);
   const [newListName, setNewListName] = useState("");
@@ -70,6 +74,7 @@ const BoardDetail = () => {
     title: "",
     description: "",
     priority: "medium",
+    assignedTo: "",
   });
 
   const [editCardOpen, setEditCardOpen] = useState(false);
@@ -123,6 +128,33 @@ const [editingCommentText, setEditingCommentText] = useState("");
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+  const fetchMembers = async () => {
+    const workspaceId =
+      board?.workspace?._id || board?.workspace;
+
+    if (!workspaceId) return;
+
+    try {
+      setMembersLoading(true);
+
+      const data = await getWorkspaceMembers(workspaceId);
+
+      setWorkspaceMembers(
+        Array.isArray(data)
+          ? data
+          : data.members || data.data || []
+      );
+    } catch (error) {
+      console.error("Failed to fetch workspace members:", error);
+    } finally {
+      setMembersLoading(false);
+    }
+  };
+
+  fetchMembers();
+}, [board?.workspace]);
 
   useEffect(() => {
     let currentWorkspaceId = null;
@@ -248,13 +280,14 @@ const [editingCommentText, setEditingCommentText] = useState("");
           description: cardForm.description.trim(),
           priority: cardForm.priority,
           listId: activeListId,
+          assignedTo: cardForm.assignedTo || null,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to create card");
 
       setNewCardOpen(false);
-      setCardForm({ title: "", description: "", priority: "medium" });
+      setCardForm({ title: "", description: "", priority: "medium" ,assignedTo: ""});
     } catch (err) {
       alert(err.message);
     }
@@ -749,6 +782,34 @@ const handleDeleteComment = async (commentId) => {
               <MenuItem value="medium">Medium</MenuItem>
               <MenuItem value="high">High</MenuItem>
             </TextField>
+
+             <TextField
+    select
+    fullWidth
+    label="Assign To"
+    value={cardForm.assignedTo || ""}
+    onChange={(e) =>
+      setCardForm((prev) => ({
+        ...prev,
+        assignedTo: e.target.value,
+      }))
+    }
+    margin="normal"
+  >
+    <MenuItem value="">
+      <em>Unassigned</em>
+    </MenuItem>
+
+    {workspaceMembers.map((member) => {
+      const user = member.user || member;
+
+      return (
+        <MenuItem key={user._id} value={user._id}>
+          {user.name || user.email || "Unnamed member"}
+        </MenuItem>
+      );
+    })}
+  </TextField>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setNewCardOpen(false)}>Cancel</Button>
@@ -899,7 +960,6 @@ const handleDeleteComment = async (commentId) => {
             />
           </Box>
 
-          {/* COMMENTS LIST */}
 {/* COMMENTS LIST */}
 <Box sx={{ mt: 2 }}>
   <Typography
