@@ -23,7 +23,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: import.meta.env.VITE_API_URL || "http://localhost:5173",
+    origin:  "https://real-time-collaborative-workspace-qmc2.onrender.com"|| "http://localhost:5173",
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
