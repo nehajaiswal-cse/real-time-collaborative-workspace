@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -31,7 +30,11 @@ const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activities, setActivities] = useState([]);
   const [boards, setBoards] = useState([]);
+
   const [activeWorkspaceId, setActiveWorkspaceId] = useState("");
+
+  const [activeWorkspaceName, setActiveWorkspaceName] =
+    useState("My Workspace");
   const [loadingBoards, setLoadingBoards] = useState(true);
   const [error, setError] = useState("");
 
@@ -73,7 +76,7 @@ const Dashboard = () => {
   };
 
   // Load workspaces first, then load boards for the selected workspace.
-  
+
   useEffect(() => {
     let cancelled = false;
 
@@ -103,6 +106,7 @@ const Dashboard = () => {
         if (cancelled) return;
 
         setActiveWorkspaceId(workspaceId);
+        setActiveWorkspaceName(workspaces[0]?.name || "My Workspace");
 
         if (!workspaceId) {
           setBoards([]);
@@ -161,18 +165,18 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-  const loadRecentActivity = async () => {
-    try {
-      const data = await getActivities();
-      setActivities(data);
-    } catch (error) {
-      console.error("Failed to load recent activities:", error);
-      setActivities([]);
-    }
-  };
+    const loadRecentActivity = async () => {
+      try {
+        const data = await getActivities();
+        setActivities(data);
+      } catch (error) {
+        console.error("Failed to load recent activities:", error);
+        setActivities([]);
+      }
+    };
 
-  loadRecentActivity();
-}, []);
+    loadRecentActivity();
+  }, []);
 
   const handleCreateBoardSubmit = async (event) => {
     event.preventDefault();
@@ -249,11 +253,7 @@ const Dashboard = () => {
         <OverviewCards />
 
         {error && (
-          <Alert
-            severity="error"
-            onClose={() => setError("")}
-            sx={{ mb: 2 }}
-          >
+          <Alert severity="error" onClose={() => setError("")} sx={{ mb: 2 }}>
             {error}
           </Alert>
         )}
@@ -268,7 +268,10 @@ const Dashboard = () => {
 
         {activeWorkspaceId && (
           <Box sx={{ mt: 3 }}>
-            <WorkspaceChat workspaceId={activeWorkspaceId} />
+            <WorkspaceChat
+              workspaceId={activeWorkspaceId}
+              workspaceName={activeWorkspaceName}
+            />
           </Box>
         )}
 
@@ -281,7 +284,6 @@ const Dashboard = () => {
 
         {/* Recent Activity */}
         <RecentActivity activities={activities} />
-        <RecentActivity activities={activities} />
       </Box>
 
       <Dialog
@@ -293,9 +295,7 @@ const Dashboard = () => {
         maxWidth="xs"
       >
         <Box component="form" onSubmit={handleCreateBoardSubmit}>
-          <DialogTitle sx={{ color: "#3F342C" }}>
-            Create New Board
-          </DialogTitle>
+          <DialogTitle sx={{ color: "#3F342C" }}>Create New Board</DialogTitle>
 
           <DialogContent>
             <TextField
