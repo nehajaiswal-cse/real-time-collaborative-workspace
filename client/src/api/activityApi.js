@@ -1,33 +1,20 @@
 
 import axios from "axios";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API_URL = "http://localhost:5000/api/activities";
 
-export const getActivities = async () => {
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    throw new Error("Please log in to view your activities.");
+export const getActivities = async (workspaceId) => {
+  if (!workspaceId) {
+    throw new Error("Workspace ID is required");
   }
 
-  const response = await axios.get(`${API_URL}/activity`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
+  const response = await axios.get(API_URL, {
+    params: {
+      workspaceId,
     },
+    withCredentials: true,
   });
 
-  const result = response.data?.data ?? response.data;
-
-  // Supports both { data: { activities: [...] } }
-  // and { data: [...] } response formats.
-  const activities = Array.isArray(result)
-    ? result
-    : result?.activities;
-
-  if (!Array.isArray(activities)) {
-    throw new Error("Invalid activity API response.");
-  }
-
-  return activities;
+  return response.data.activities || response.data || [];
 };
+

@@ -23,10 +23,21 @@ import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import SendIcon from "@mui/icons-material/Send";
+import CommentIcon from "@mui/icons-material/Comment";
+import EditIcon from "@mui/icons-material/Edit";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
 
 import Navbar from "../components/common/Navbar.jsx";
 import Sidebar from "../components/common/Sidebar.jsx";
 import socket from "../socket";
+import {
+  getComments,
+  createComment,
+  updateComment,
+  deleteComment,
+} from "../api/commentApi.js";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -63,6 +74,12 @@ const BoardDetail = () => {
 
   const [editCardOpen, setEditCardOpen] = useState(false);
   const [editingCard, setEditingCard] = useState(null);
+  const [comments, setComments] = useState([]);
+const [commentText, setCommentText] = useState("");
+const [commentsLoading, setCommentsLoading] = useState(false);
+const [commentSubmitting, setCommentSubmitting] = useState(false);
+const [editingCommentId, setEditingCommentId] = useState(null);
+const [editingCommentText, setEditingCommentText] = useState("");
 
   const fetchBoardDetails = async () => {
     try {
@@ -297,6 +314,94 @@ const BoardDetail = () => {
     }
   };
 
+  const fetchComments = async (cardId) => {
+  if (!cardId) return;
+
+  try {
+    setCommentsLoading(true);
+
+    const data = await getComments(cardId);
+
+    setComments(data.comments || data || []);
+  } catch (error) {
+    console.error("Fetch comments error:", error);
+    setComments([]);
+  } finally {
+    setCommentsLoading(false);
+  }
+};
+
+const handleAddComment = async () => {
+  if (!editingCard?._id || !commentText.trim()) return;
+
+  try {
+    setCommentSubmitting(true);
+
+    const newComment = await createComment(
+      editingCard._id,
+      commentText.trim()
+    );
+
+    setComments((prev) => [...prev, newComment]);
+    setCommentText("");
+  } catch (error) {
+    console.error("Create comment error:", error);
+
+    alert(
+      error.response?.data?.message ||
+        "Failed to add comment"
+    );
+  } finally {
+    setCommentSubmitting(false);
+  }
+};
+
+const handleEditComment = (comment) => {
+  setEditingCommentId(comment._id);
+  setEditingCommentText(comment.text);
+};
+
+const handleUpdateComment = async (commentId) => {
+  if (!editingCommentText.trim()) return;
+
+  try {
+    const data = await updateComment(
+      commentId,
+      editingCommentText.trim()
+    );
+
+    setComments((prev) =>
+      prev.map((comment) =>
+        comment._id === commentId
+          ? data.comment || data
+          : comment
+      )
+    );
+
+    setEditingCommentId(null);
+    setEditingCommentText("");
+  } catch (error) {
+    console.error("Failed to update comment:", error);
+  }
+};
+
+const handleDeleteComment = async (commentId) => {
+  const confirmed = window.confirm(
+    "Are you sure you want to delete this comment?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await deleteComment(commentId);
+
+    setComments((prev) =>
+      prev.filter((comment) => comment._id !== commentId)
+    );
+  } catch (error) {
+    console.error("Failed to delete comment:", error);
+  }
+};
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
       <Navbar onMenuClick={() => setSidebarOpen((prev) => !prev)} />
@@ -491,6 +596,9 @@ const BoardDetail = () => {
                                             onClick={() => {
                                               setEditingCard(card);
                                               setEditCardOpen(true);
+                                              setCommentText("");
+                                              setComments([]);
+                                              fetchComments(card._id);
                                             }}
                                             sx={{ color: "#77716C", p: 0.5 }}
                                           >
@@ -652,55 +760,406 @@ const BoardDetail = () => {
       </Dialog>
 
       {/* Dialog for editing/deleting Card */}
-      <Dialog open={editCardOpen} onClose={() => setEditCardOpen(false)} fullWidth maxWidth="xs">
-        {editingCard && (
-          <form onSubmit={handleUpdateCard}>
-            <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              Edit Card
-              <IconButton color="error" onClick={() => handleDeleteCard(editingCard._id)}>
-                <DeleteIcon />
+    {/* Dialog for editing/deleting Card */}
+<Dialog
+  open={editCardOpen}
+  onClose={() => {
+    setEditCardOpen(false);
+    setComments([]);
+    setCommentText("");
+  }}
+  fullWidth
+  maxWidth="sm"
+>
+  {editingCard && (
+    <form onSubmit={handleUpdateCard}>
+      <DialogTitle
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Box>
+          <Typography
+            sx={{
+              fontWeight: 700,
+              color: "#3F342C",
+            }}
+          >
+            {editingCard.title}
+          </Typography>
+
+          <Typography
+            variant="caption"
+            color="text.secondary"
+          >
+            Card details
+          </Typography>
+        </Box>
+
+        <IconButton
+          color="error"
+          onClick={() =>
+            handleDeleteCard(editingCard._id)
+          }
+        >
+          <DeleteIcon />
+        </IconButton>
+      </DialogTitle>
+
+      <DialogContent dividers>
+        {/* CARD DETAILS */}
+        <Typography
+          sx={{
+            fontWeight: 700,
+            mb: 1,
+            color: "#3F342C",
+          }}
+        >
+          Card Details
+        </Typography>
+
+        <TextField
+          fullWidth
+          label="Card Title"
+          value={editingCard.title}
+          onChange={(e) =>
+            setEditingCard((prev) => ({
+              ...prev,
+              title: e.target.value,
+            }))
+          }
+          margin="normal"
+          required
+        />
+
+        <TextField
+          fullWidth
+          multiline
+          rows={3}
+          label="Description"
+          value={editingCard.description || ""}
+          onChange={(e) =>
+            setEditingCard((prev) => ({
+              ...prev,
+              description: e.target.value,
+            }))
+          }
+          margin="normal"
+        />
+
+        <TextField
+          select
+          fullWidth
+          label="Priority"
+          value={editingCard.priority || "medium"}
+          onChange={(e) =>
+            setEditingCard((prev) => ({
+              ...prev,
+              priority: e.target.value,
+            }))
+          }
+          margin="normal"
+        >
+          <MenuItem value="low">Low</MenuItem>
+          <MenuItem value="medium">Medium</MenuItem>
+          <MenuItem value="high">High</MenuItem>
+        </TextField>
+
+        {/* COMMENTS */}
+        <Box sx={{ mt: 4 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              mb: 2,
+            }}
+          >
+            <CommentIcon sx={{ color: "#A9744F" }} />
+
+            <Typography
+              sx={{
+                fontWeight: 700,
+                color: "#3F342C",
+              }}
+            >
+              Comments
+            </Typography>
+
+            <Chip
+              label={comments.length}
+              size="small"
+              sx={{
+                backgroundColor: "#F4ECE6",
+                color: "#A9744F",
+                fontWeight: 700,
+              }}
+            />
+          </Box>
+
+          {/* COMMENTS LIST */}
+{/* COMMENTS LIST */}
+<Box sx={{ mt: 2 }}>
+  <Typography
+    variant="subtitle1"
+    sx={{
+      fontWeight: 600,
+      mb: 1.5,
+      color: "#4A403A",
+    }}
+  >
+    Comments ({comments.length})
+  </Typography>
+
+  {comments.length === 0 ? (
+    <Typography
+      variant="body2"
+      sx={{
+        color: "#99918B",
+        py: 2,
+        textAlign: "center",
+      }}
+    >
+      No comments yet.
+    </Typography>
+  ) : (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 1.5,
+        maxHeight: 250,
+        overflowY: "auto",
+      }}
+    >
+      {comments.map((comment) => (
+        <Box
+          key={comment._id}
+          sx={{
+            p: 1.5,
+            borderRadius: 2,
+            backgroundColor: "#F8F5F2",
+            border: "1px solid #E8E0DA",
+          }}
+        >
+          {/* COMMENT HEADER */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 600,
+                color: "#4A403A",
+              }}
+            >
+              {comment.user?.name || "User"}
+            </Typography>
+
+            <Box>
+              <IconButton
+                size="small"
+                onClick={() => handleEditComment(comment)}
+              >
+                <EditIcon fontSize="small" />
               </IconButton>
-            </DialogTitle>
-            <DialogContent>
-              <TextField
-                fullWidth
-                label="Card Title"
-                value={editingCard.title}
-                onChange={(e) => setEditingCard((prev) => ({ ...prev, title: e.target.value }))}
-                margin="normal"
-                required
-              />
+
+              <IconButton
+                size="small"
+                color="error"
+                onClick={() =>
+                  handleDeleteComment(comment._id)
+                }
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </Box>
+
+          {/* COMMENT BODY */}
+          {editingCommentId === comment._id ? (
+            <Box sx={{ mt: 1 }}>
               <TextField
                 fullWidth
                 multiline
-                rows={3}
-                label="Description"
-                value={editingCard.description || ""}
-                onChange={(e) => setEditingCard((prev) => ({ ...prev, description: e.target.value }))}
-                margin="normal"
+                maxRows={4}
+                size="small"
+                value={editingCommentText}
+                onChange={(e) =>
+                  setEditingCommentText(e.target.value)
+                }
               />
-              <TextField
-                select
-                fullWidth
-                label="Priority"
-                value={editingCard.priority || "medium"}
-                onChange={(e) => setEditingCard((prev) => ({ ...prev, priority: e.target.value }))}
-                margin="normal"
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: 0.5,
+                  mt: 1,
+                }}
               >
-                <MenuItem value="low">Low</MenuItem>
-                <MenuItem value="medium">Medium</MenuItem>
-                <MenuItem value="high">High</MenuItem>
-              </TextField>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setEditCardOpen(false)}>Cancel</Button>
-              <Button type="submit" variant="contained" sx={{ bgcolor: "#A9744F" }}>
-                Save Changes
-              </Button>
-            </DialogActions>
-          </form>
-        )}
-      </Dialog>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    setEditingCommentId(null);
+                    setEditingCommentText("");
+                  }}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    handleUpdateComment(comment._id)
+                  }
+                  disabled={!editingCommentText.trim()}
+                  sx={{
+                    color: "#A9744F",
+                  }}
+                >
+                  <CheckIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            </Box>
+          ) : (
+            <Typography
+              variant="body2"
+              sx={{
+                mt: 0.7,
+                color: "#5F5650",
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              {comment.text}
+            </Typography>
+          )}
+
+          {/* COMMENT DATE */}
+          {comment.createdAt && (
+            <Typography
+              variant="caption"
+              sx={{
+                display: "block",
+                mt: 0.8,
+                color: "#A39A94",
+              }}
+            >
+              {new Date(comment.createdAt).toLocaleString()}
+            </Typography>
+          )}
+        </Box>
+      ))}
+    </Box>
+  )}
+</Box>
+
+          {/* ADD COMMENT */}
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              mt: 2,
+              alignItems: "flex-end",
+            }}
+          >
+            <TextField
+              fullWidth
+              multiline
+              maxRows={4}
+              placeholder="Write a comment..."
+              value={commentText}
+              onChange={(e) =>
+                setCommentText(e.target.value)
+              }
+              onKeyDown={(e) => {
+                if (
+                  e.key === "Enter" &&
+                  !e.shiftKey
+                ) {
+                  e.preventDefault();
+                  handleAddComment();
+                }
+              }}
+            />
+
+            <IconButton
+              onClick={handleAddComment}
+              disabled={
+                !commentText.trim() ||
+                commentSubmitting
+              }
+              sx={{
+                backgroundColor: "#A9744F",
+                color: "#fff",
+                width: 42,
+                height: 42,
+                "&:hover": {
+                  backgroundColor: "#8B5E3C",
+                },
+                "&.Mui-disabled": {
+                  backgroundColor: "#ddd",
+                },
+              }}
+            >
+              {commentSubmitting ? (
+                <CircularProgress
+                  size={20}
+                  sx={{ color: "#fff" }}
+                />
+              ) : (
+                <SendIcon fontSize="small" />
+              )}
+            </IconButton>
+          </Box>
+
+          <Typography
+            variant="caption"
+            sx={{
+              display: "block",
+              mt: 0.5,
+              color: "#99918B",
+            }}
+          >
+            Press Enter to comment · Shift + Enter
+            for a new line
+          </Typography>
+        </Box>
+      </DialogContent>
+
+      <DialogActions>
+        <Button
+          onClick={() => {
+            setEditCardOpen(false);
+            setComments([]);
+            setCommentText("");
+          }}
+        >
+          Close
+        </Button>
+
+        <Button
+          type="submit"
+          variant="contained"
+          sx={{
+            bgcolor: "#A9744F",
+            "&:hover": {
+              bgcolor: "#8B5E3C",
+            },
+          }}
+        >
+          Save Changes
+        </Button>
+      </DialogActions>
+    </form>
+  )}
+</Dialog>
     </Box>
   );
 };

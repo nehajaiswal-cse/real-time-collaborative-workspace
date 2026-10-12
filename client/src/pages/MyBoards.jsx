@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
   Box,
   Button,
@@ -15,89 +16,148 @@ import Navbar from "../components/common/Navbar.jsx";
 import Sidebar from "../components/common/Sidebar.jsx";
 import BoardsHeader from "../components/boards/BoardsHeader";
 import BoardsGrid from "../components/boards/BoardsGrid";
+
 import { getBoards } from "../api/dashboardApi";
-import { getMyWorkspaces, createWorkspace } from "../api/workspaceApi";
+import { createWorkspace } from "../api/workspaceApi";
 import { createBoard } from "../services/boardService";
+
+import { useWorkspace } from "../context/workspaceContext.jsx";
 
 const MyBoards = () => {
   const navigate = useNavigate();
+
+  const {
+    selectedWorkspace,
+  } = useWorkspace();
+
   const [boards, setBoards] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(true);
-  const [activeWorkspaceId, setActiveWorkspaceId] = useState("");
 
-  const [createBoardOpen, setCreateBoardOpen] = useState(false);
-  const [newBoardName, setNewBoardName] = useState("");
-  const [creating, setCreating] = useState(false);
+  const [createBoardOpen, setCreateBoardOpen] =
+    useState(false);
+
+  const [newBoardName, setNewBoardName] =
+    useState("");
+
+  const [creating, setCreating] =
+    useState(false);
+
+  // ==========================================
+  // Load boards for selected workspace
+  // ==========================================
+
+  useEffect(() => {
+    const loadBoards = async () => {
+      if (!selectedWorkspace?._id) {
+        setBoards([]);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+
+        console.log(
+          "Loading boards for workspace:",
+          selectedWorkspace._id
+        );
+
+        const boardList = await getBoards(
+          selectedWorkspace._id
+        );
+        
+
+        setBoards(boardList || []);
+      } catch (error) {
+        console.error(
+          "Failed to load boards:",
+          error
+        );
+
+        setBoards([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBoards();
+  }, [selectedWorkspace?._id]);
+
+  // ==========================================
+  // Sidebar
+  // ==========================================
 
   const handleMenuClick = () => {
     setSidebarOpen((prev) => !prev);
   };
 
-  const loadBoardsData = async () => {
-    try {
-      setLoading(true);
-      let wsList = await getMyWorkspaces();
-      if (!Array.isArray(wsList) || wsList.length === 0) {
-        try {
-          const newWs = await createWorkspace({ name: "My Workspace" });
-          if (newWs) wsList = [newWs];
-        } catch (e) {
-          console.error("Auto create workspace failed:", e);
-        }
-      }
-
-      const activeWs = wsList?.[0]?._id || "";
-      setActiveWorkspaceId(activeWs);
-
-      if (activeWs) {
-        const boardList = await getBoards(activeWs);
-        setBoards(boardList || []);
-      }
-    } catch (error) {
-      console.error("Failed to load boards:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadBoardsData();
-  }, []);
+  // ==========================================
+  // Create Board
+  // ==========================================
 
   const handleCreateBoard = () => {
+    if (!selectedWorkspace?._id) {
+      alert("Please select a workspace first.");
+      return;
+    }
+
     setCreateBoardOpen(true);
   };
 
+  // ==========================================
+  // Open Board
+  // ==========================================
+
   const handleOpenBoard = (board) => {
-    if (board && board._id) {
+    if (board?._id) {
       navigate(`/boards/${board._id}`);
     }
   };
 
-  const handleBoardMenuClick = (event, board) => {
+  const handleBoardMenuClick = (
+    event,
+    board
+  ) => {
     console.log("Board menu:", board);
   };
 
+  // ==========================================
+  // Create Board Submit
+  // ==========================================
+
   const handleCreateBoardSubmit = async (e) => {
     e.preventDefault();
+
     if (!newBoardName.trim()) return;
+
+    if (!selectedWorkspace?._id) {
+      alert("Please select a workspace first.");
+      return;
+    }
 
     try {
       setCreating(true);
-      let targetWsId = activeWorkspaceId;
-      if (!targetWsId) {
-        const newWs = await createWorkspace({ name: "My Workspace" });
-        targetWsId = newWs._id;
-        setActiveWorkspaceId(targetWsId);
-      }
 
-      const newBoard = await createBoard(newBoardName.trim(), targetWsId);
-      setBoards((prev) => [newBoard, ...prev]);
+      const newBoard = await createBoard(
+        newBoardName.trim(),
+        selectedWorkspace._id
+      );
+
+      setBoards((prev) => [
+        newBoard,
+        ...prev,
+      ]);
+
       setNewBoardName("");
       setCreateBoardOpen(false);
-    } catch (err) {
-      alert(err.message || "Failed to create board");
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        error.message ||
+          "Failed to create board"
+      );
     } finally {
       setCreating(false);
     }
@@ -110,76 +170,137 @@ const MyBoards = () => {
         backgroundColor: "#f9fafb",
       }}
     >
-      {/* Fixed Navbar */}
-      <Navbar onMenuClick={handleMenuClick} />
+      <Navbar
+        onMenuClick={handleMenuClick}
+      />
 
-      {/* Fixed Sidebar */}
       <Sidebar open={sidebarOpen} />
 
-      {/* Main Content */}
       <Box
         component="main"
         sx={{
           boxSizing: "border-box",
+
           mt: "72px",
-          ml: sidebarOpen ? "256px" : "72px",
+
+          ml: sidebarOpen
+            ? "256px"
+            : "72px",
+
           height: "calc(100vh - 72px)",
+
           overflowY: "auto",
+
           minWidth: 0,
+
           p: {
             xs: 2,
             sm: 3,
             md: 4,
           },
-          transition: "margin-left 0.3s ease",
+
+          transition:
+            "margin-left 0.3s ease",
         }}
       >
-        <BoardsHeader onCreateBoard={handleCreateBoard} />
+        <BoardsHeader
+          onCreateBoard={
+            handleCreateBoard
+          }
+        />
 
         {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-            <CircularProgress sx={{ color: "#A9744F" }} />
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              py: 8,
+            }}
+          >
+            <CircularProgress
+              sx={{
+                color: "#A9744F",
+              }}
+            />
           </Box>
         ) : (
           <BoardsGrid
             boards={boards}
-            onOpenBoard={handleOpenBoard}
-            onBoardMenuClick={handleBoardMenuClick}
+            onOpenBoard={
+              handleOpenBoard
+            }
+            onBoardMenuClick={
+              handleBoardMenuClick
+            }
           />
         )}
       </Box>
 
-      {/* Create Board Modal */}
+      {/* ================================= */}
+      {/* CREATE BOARD DIALOG */}
+      {/* ================================= */}
+
       <Dialog
         open={createBoardOpen}
-        onClose={() => setCreateBoardOpen(false)}
+        onClose={() =>
+          setCreateBoardOpen(false)
+        }
         fullWidth
         maxWidth="xs"
       >
-        <form onSubmit={handleCreateBoardSubmit}>
-          <DialogTitle>Create New Board</DialogTitle>
+        <form
+          onSubmit={
+            handleCreateBoardSubmit
+          }
+        >
+          <DialogTitle>
+            Create New Board
+          </DialogTitle>
+
           <DialogContent>
             <TextField
               fullWidth
               autoFocus
               label="Board Name"
               value={newBoardName}
-              onChange={(e) => setNewBoardName(e.target.value)}
+              onChange={(e) =>
+                setNewBoardName(
+                  e.target.value
+                )
+              }
               margin="normal"
               required
             />
           </DialogContent>
+
           <DialogActions>
-            <Button onClick={() => setCreateBoardOpen(false)} disabled={creating}>
+            <Button
+              onClick={() =>
+                setCreateBoardOpen(false)
+              }
+              disabled={creating}
+            >
               Cancel
             </Button>
+
             <Button
               type="submit"
               variant="contained"
-              disabled={creating || !newBoardName.trim()}
-              sx={{ bgcolor: "#A9744F", "&:hover": { bgcolor: "#8B5E3C" } }}
+              disabled={
+                creating ||
+                !newBoardName.trim()
+              }
+              sx={{
+                bgcolor: "#A9744F",
+
+                "&:hover": {
+                  bgcolor: "#8B5E3C",
+                },
+              }}
             >
-              {creating ? "Creating..." : "Create Board"}
+              {creating
+                ? "Creating..."
+                : "Create Board"}
             </Button>
           </DialogActions>
         </form>

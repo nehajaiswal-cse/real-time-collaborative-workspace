@@ -110,6 +110,69 @@ export const initSocket = (server) => {
       });
     });
 
+  
+    // BOARD ROOM
+
+    socket.on("board:join", (boardId) => {
+      if (!boardId) return;
+
+      socket.join(`board:${boardId}`);
+
+      console.log(
+        `Socket ${socket.id} joined board:${boardId}`
+      );
+    });
+
+    socket.on("board:leave", (boardId) => {
+      if (!boardId) return;
+
+      socket.leave(`board:${boardId}`);
+
+      console.log(
+        `Socket ${socket.id} left board:${boardId}`
+      );
+    });
+
+   
+    // Chat message
+    socket.on(
+      "chat:send",
+      async ({ workspaceId, message }) => {
+        try {
+          if (!workspaceId || !message?.trim()) {
+            return;
+          }
+
+          // Verify membership before sending
+          const membership = await WorkspaceMember.findOne({
+            workspace: workspaceId,
+            user: socket.userId,
+          });
+
+          if (!membership) {
+            return socket.emit("chat:error", {
+              message: "You are not a member of this workspace",
+            });
+          }
+
+          io.to(`workspace:${workspaceId}`).emit(
+            "chat:message",
+            {
+              userId: socket.userId,
+              message: message.trim(),
+              createdAt: new Date(),
+            }
+          );
+        } catch (error) {
+          console.error("Chat send error:", error);
+
+          socket.emit("chat:error", {
+            message: "Unable to send message",
+          });
+        }
+      }
+    );
+
     // Disconnect
     socket.on("disconnect", (reason) => {
       console.log(
@@ -121,6 +184,7 @@ export const initSocket = (server) => {
 
   return io;
 };
+
 
 export const getIO = () => {
   if (!io) {

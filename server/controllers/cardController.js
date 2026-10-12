@@ -4,6 +4,7 @@ import Board from "../models/board.js";
 import WorkspaceMember from "../models/workspaceMember.js";
 import User from "../models/user.js";
 import { getIO } from "../socket.js";
+import createActivity from "../utils/createActivity.js";
 
 // Create Card
 export const createCard = async (req, res) => {
@@ -84,6 +85,15 @@ export const createCard = async (req, res) => {
     const io = getIO();
 
     io.to(`workspace:${board.workspace}`).emit("card:created", populatedCard);
+
+   await createActivity({
+  type: "CARD_CREATED",
+  userId: req.user.id,
+  workspaceId: board.workspace,
+  boardId: board._id,
+  cardId: card._id,
+  message: `created card "${card.title}"`,
+});
 
     res.status(201).json({
       message: "Card created successfully",
@@ -298,6 +308,15 @@ export const updateCard = async (req, res) => {
 
     io.to(`workspace:${board.workspace}`).emit("card:updated", updatedCard);
 
+    await createActivity({
+  type: "CARD_UPDATED",
+  userId: req.user.id,
+  workspaceId: board.workspace,
+  boardId: board._id,
+  cardId: card._id,
+  message: `updated card "${card.title}"`,
+});
+
     res.json({
       message: "Card updated successfully",
       card: updatedCard,
@@ -459,6 +478,14 @@ export const moveCard = async (req, res) => {
       movedCard
     );
 
+    await createActivity({
+  type: "CARD_MOVED",
+  userId: req.user.id,
+  workspaceId,
+  boardId,
+  cardId: card._id,
+  message: `moved card "${card.title}"`,
+});
     res.json({
       message: "Card moved successfully",
       card: movedCard,

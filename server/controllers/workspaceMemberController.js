@@ -6,6 +6,12 @@ import User from "../models/user.js";
 export const addMember = async (req, res) => {
   try {
     const { workspaceId, userId, email, role } = req.body;
+    console.log("ADD MEMBER BODY:", {
+  workspaceId,
+  userId,
+  email,
+  role,
+});
 
     if (!workspaceId || (!userId && !email)) {
       return res.status(400).json({
@@ -31,9 +37,23 @@ export const addMember = async (req, res) => {
     let user;
     if (userId) {
       user = await User.findById(userId);
-    } else if (email) {
-      user = await User.findOne({ email: email.trim().toLowerCase() });
-    }
+    }  else if (email) {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  console.log("Email received:", email);
+  console.log("Normalized email:", normalizedEmail);
+
+  console.log(
+    "All users:",
+    await User.find({}, "name email")
+  );
+
+  user = await User.findOne({
+    email: normalizedEmail,
+  });
+
+  console.log("FOUND USER:", user);
+}
 
     if (!user) {
       return res.status(404).json({
