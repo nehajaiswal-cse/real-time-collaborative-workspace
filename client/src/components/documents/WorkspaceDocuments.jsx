@@ -10,6 +10,7 @@ function WorkspaceDocuments({ workspaceId }) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  
 
   const token = localStorage.getItem("token");
 
