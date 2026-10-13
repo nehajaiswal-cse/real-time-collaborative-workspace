@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import socket from "../../socket";
 
-const API_URL = "http://localhost:5000/api/messages";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 function WorkspaceChat({ workspaceId }) {
   const [messages, setMessages] = useState([]);
@@ -19,7 +19,7 @@ function WorkspaceChat({ workspaceId }) {
     const fetchMessages = async () => {
       try {
         const response = await axios.get(
-          `${API_URL}/workspace/${workspaceId}`,
+          `${API_URL}/messages/workspace/${workspaceId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -71,7 +71,7 @@ function WorkspaceChat({ workspaceId }) {
 
     try {
       const response = await axios.post(
-        `${API_URL}/workspace/${workspaceId}`,
+        `${API_URL}/messages/workspace/${workspaceId}`,
         {
           content: content.trim(),
         },
