@@ -14,6 +14,7 @@ function WorkspaceDocuments({ workspaceId }) {
 
   const token = localStorage.getItem("token");
 
+  // Fetch documents
   useEffect(() => {
     if (!workspaceId || !token) return;
 
@@ -39,16 +40,30 @@ function WorkspaceDocuments({ workspaceId }) {
     fetchDocuments();
   }, [workspaceId, token]);
 
-  // Join workspace and receive real-time document updates
+  // Join workspace + real-time document events
   useEffect(() => {
     if (!workspaceId) return;
 
     socket.emit("workspace:join", workspaceId);
 
-    const handleDocumentUpdate = (updatedDocument) => {
+    const handleDocumentCreated = (newDocument) => {
+      setDocuments((prev) => {
+        const exists = prev.some(
+          (doc) => doc._id === newDocument._id
+        );
+
+        if (exists) return prev;
+
+        return [newDocument, ...prev];
+      });
+    };
+
+    const handleDocumentUpdated = (updatedDocument) => {
       setDocuments((prev) =>
         prev.map((doc) =>
-          doc._id === updatedDocument._id ? updatedDocument : doc
+          doc._id === updatedDocument._id
+            ? updatedDocument
+            : doc
         )
       );
 
@@ -64,14 +79,35 @@ function WorkspaceDocuments({ workspaceId }) {
       });
     };
 
-    socket.on("document:updated", handleDocumentUpdate);
+    socket.on(
+      "document:created",
+      handleDocumentCreated
+    );
+
+    socket.on(
+      "document:updated",
+      handleDocumentUpdated
+    );
 
     return () => {
-      socket.off("document:updated", handleDocumentUpdate);
-      socket.emit("workspace:leave", workspaceId);
+      socket.off(
+        "document:created",
+        handleDocumentCreated
+      );
+
+      socket.off(
+        "document:updated",
+        handleDocumentUpdated
+      );
+
+      socket.emit(
+        "workspace:leave",
+        workspaceId
+      );
     };
   }, [workspaceId]);
 
+  // Create document
   const handleCreateDocument = async () => {
     try {
       const response = await axios.post(
@@ -89,21 +125,35 @@ function WorkspaceDocuments({ workspaceId }) {
 
       const newDocument = response.data.document;
 
-      setDocuments((prev) => [newDocument, ...prev]);
+      setDocuments((prev) => {
+        const exists = prev.some(
+          (doc) => doc._id === newDocument._id
+        );
+
+        if (exists) return prev;
+
+        return [newDocument, ...prev];
+      });
+
       setSelectedDocument(newDocument);
       setTitle(newDocument.title);
       setContent(newDocument.content);
     } catch (error) {
-      console.error("Failed to create document:", error);
+      console.error(
+        "Failed to create document:",
+        error
+      );
     }
   };
 
+  // Select document
   const handleSelectDocument = (document) => {
     setSelectedDocument(document);
     setTitle(document.title);
     setContent(document.content);
   };
 
+  // Save document
   const handleSave = async () => {
     if (!selectedDocument) return;
 
@@ -123,17 +173,23 @@ function WorkspaceDocuments({ workspaceId }) {
         }
       );
 
-      const updatedDocument = response.data.document;
+      const updatedDocument =
+        response.data.document;
 
       setDocuments((prev) =>
         prev.map((doc) =>
-          doc._id === updatedDocument._id ? updatedDocument : doc
+          doc._id === updatedDocument._id
+            ? updatedDocument
+            : doc
         )
       );
 
       setSelectedDocument(updatedDocument);
     } catch (error) {
-      console.error("Failed to save document:", error);
+      console.error(
+        "Failed to save document:",
+        error
+      );
     } finally {
       setSaving(false);
     }
@@ -178,12 +234,16 @@ function WorkspaceDocuments({ workspaceId }) {
         {loading ? (
           <p>Loading...</p>
         ) : documents.length === 0 ? (
-          <p style={{ color: "#777" }}>No documents yet.</p>
+          <p style={{ color: "#777" }}>
+            No documents yet.
+          </p>
         ) : (
           documents.map((document) => (
             <div
               key={document._id}
-              onClick={() => handleSelectDocument(document)}
+              onClick={() =>
+                handleSelectDocument(document)
+              }
               style={{
                 padding: "10px",
                 marginBottom: "6px",
@@ -225,7 +285,9 @@ function WorkspaceDocuments({ workspaceId }) {
           <>
             <input
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) =>
+                setTitle(e.target.value)
+              }
               style={{
                 fontSize: "22px",
                 fontWeight: "600",
@@ -239,7 +301,9 @@ function WorkspaceDocuments({ workspaceId }) {
 
             <textarea
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={(e) =>
+                setContent(e.target.value)
+              }
               placeholder="Start writing..."
               style={{
                 flex: 1,
@@ -266,7 +330,9 @@ function WorkspaceDocuments({ workspaceId }) {
                 cursor: "pointer",
               }}
             >
-              {saving ? "Saving..." : "Save Document"}
+              {saving
+                ? "Saving..."
+                : "Save Document"}
             </button>
           </>
         )}
