@@ -11,19 +11,20 @@ import workspaceMemberRoutes from "./routes/workspaceMemberRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import activityRoutes from "./routes/activityRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
-import commentRoutes from "./routes/commentRoutes.js"
-import notificationRoute from "./routes/notificationRoute.js"
+import commentRoutes from "./routes/commentRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import notificationRoute from "./routes/notificationRoute.js";
 
 dotenv.config();
 
 const app = express();
 
-// Middleware
-
-
 app.use(
   cors({
-    origin:  "https://real-time-collaborative-workspace-qmc2.onrender.com"|| "http://localhost:5173",
+    origin: [
+      "https://real-time-collaborative-workspace-qmc2.onrender.com",
+      "http://localhost:5173",
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -32,15 +33,14 @@ app.use(
 
 app.use(express.json());
 
-// Test route
 app.get("/", (req, res) => {
   res.json({
     message: "Collaborative Workspace API is running",
   });
 });
 
-// Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/workspaces", workspaceRoutes);
 app.use("/api/boards", boardRoutes);
 app.use("/api/lists", listRoutes);

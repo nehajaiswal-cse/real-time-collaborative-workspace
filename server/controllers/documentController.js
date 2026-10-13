@@ -25,12 +25,18 @@ export const getWorkspaceDocuments = async (req, res) => {
       .populate("updatedBy", "name email")
       .sort({ updatedAt: -1 });
 
-    res.json({ documents });
+    res.json({
+      documents,
+    });
   } catch (error) {
     console.error("Get documents error:", error);
-    res.status(500).json({ message: "Server error" });
+
+    res.status(500).json({
+      message: "Server error",
+    });
   }
 };
+
 
 // Create document
 export const createDocument = async (req, res) => {
@@ -67,14 +73,27 @@ export const createDocument = async (req, res) => {
       .populate("createdBy", "name email")
       .populate("updatedBy", "name email");
 
+    // REAL-TIME CREATE EVENT
+    const io = getIO();
+
+    io.to(`workspace:${workspaceId}`).emit(
+      "document:created",
+      populatedDocument
+    );
+
     res.status(201).json({
+      message: "Document created successfully",
       document: populatedDocument,
     });
   } catch (error) {
     console.error("Create document error:", error);
-    res.status(500).json({ message: "Server error" });
+
+    res.status(500).json({
+      message: "Server error",
+    });
   }
 };
+
 
 // Update document
 export const updateDocument = async (req, res) => {
@@ -102,6 +121,12 @@ export const updateDocument = async (req, res) => {
     }
 
     if (title !== undefined) {
+      if (!title.trim()) {
+        return res.status(400).json({
+          message: "Document title cannot be empty",
+        });
+      }
+
       document.title = title.trim();
     }
 
@@ -117,18 +142,23 @@ export const updateDocument = async (req, res) => {
       .populate("createdBy", "name email")
       .populate("updatedBy", "name email");
 
+    // REAL-TIME UPDATE EVENT
     const io = getIO();
 
     io.to(`workspace:${document.workspace}`).emit(
       "document:updated",
-      updatedDocument,
+      updatedDocument
     );
+
     res.json({
       message: "Document updated successfully",
       document: updatedDocument,
     });
   } catch (error) {
     console.error("Update document error:", error);
-    res.status(500).json({ message: "Server error" });
+
+    res.status(500).json({
+      message: "Server error",
+    });
   }
 };
