@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -26,15 +27,10 @@ import BoardsSection from "../components/dashboard/BoardsSection.jsx";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import WorkspaceChat from "../components/chat/WorkspaceChat";
 
-import {
-  getDashboardData,
-  getBoards,
-} from "../api/dashboardApi";
+import { useWorkspace } from "../context/workspaceContext";
+import { getWorkspaceBoards } from "../api/boardApi";
 
-import {
-  getMyWorkspaces,
-  createWorkspace,
-} from "../api/workspaceApi";
+import { createWorkspace } from "../api/workspaceApi";
 
 import { getActivities } from "../api/activityApi.js";
 import { createBoard } from "../services/boardService";
@@ -49,16 +45,17 @@ const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activities, setActivities] = useState([]);
   const [boards, setBoards] = useState([]);
-  const [workspaces, setWorkspaces] = useState([]);
-
-  const [activeWorkspaceId, setActiveWorkspaceId] =
-    useState("");
-
-  const [loadingBoards, setLoadingBoards] =
-    useState(true);
-
   const [error, setError] = useState("");
 
+  const {
+    selectedWorkspace,
+    workspaces,
+    loading: workspacesLoading,
+    loadWorkspaces,
+  } = useWorkspace();
+
+  const workspaceId = selectedWorkspace?._id || selectedWorkspace?.id;
+  const [boardsLoading, setBoardsLoading] = useState(false);
   // =====================================================
   // USER
   // =====================================================
@@ -107,121 +104,106 @@ const Dashboard = () => {
   };
 
   // =====================================================
-  // LOAD WORKSPACES + BOARDS
+  // LOAD BOARDS FOR THE SELECTED WORKSPACE
   // =====================================================
 
   useEffect(() => {
     let cancelled = false;
 
-    const loadWorkspaceAndBoards = async () => {
-      setLoadingBoards(true);
+    const loadBoards = async () => {
+      if (!workspaceId) {
+        setBoards([]);
+        setBoardsLoading(false);
+        return;
+      }
+
+      setBoards([]);
+      setBoardsLoading(true);
       setError("");
 
       try {
-        const workspaceList =
-          await getMyWorkspaces();
+        const response = await getWorkspaceBoards(workspaceId);
+        const result = response?.data ?? response;
 
-        const validWorkspaces = Array.isArray(
-          workspaceList
-        )
-          ? workspaceList
-          : [];
-
-        if (cancelled) return;
-
-        setWorkspaces(validWorkspaces);
-
-        // ---------------------------------------------
-        // NO WORKSPACE
-        // ---------------------------------------------
-
-        if (validWorkspaces.length === 0) {
-          setActiveWorkspaceId("");
-          setBoards([]);
-          return;
-        }
-
-        // ---------------------------------------------
-        // SELECT FIRST WORKSPACE
-        // ---------------------------------------------
-
-        const workspaceId =
-          validWorkspaces[0]?._id ||
-          validWorkspaces[0]?.id ||
-          "";
-
-        setActiveWorkspaceId(workspaceId);
-
-        if (!workspaceId) {
-          setBoards([]);
-          return;
-        }
-
-        // ---------------------------------------------
-        // LOAD BOARDS
-        // ---------------------------------------------
-
-        const boardList =
-          await getBoards(workspaceId);
+        const workspaceBoards = Array.isArray(result)
+          ? result
+          : Array.isArray(result?.boards)
+            ? result.boards
+            : Array.isArray(result?.data?.boards)
+              ? result.data.boards
+              : [];
 
         if (!cancelled) {
-          setBoards(
-            Array.isArray(boardList)
-              ? boardList
-              : []
-          );
+          setBoards(workspaceBoards);
         }
       } catch (err) {
         if (!cancelled) {
-          console.error(
-            "Failed to load workspaces and boards:",
-            err
-          );
-
+          console.error("Failed to load workspace boards:", err);
+          setBoards([]);
           setError(
             err.response?.data?.message ||
-              err.message ||
-              "Unable to load your workspace."
+            "Unable to load boards for this workspace."
           );
         }
       } finally {
         if (!cancelled) {
-          setLoadingBoards(false);
+          setBoardsLoading(false);
         }
       }
     };
 
-    loadWorkspaceAndBoards();
+    loadBoards();
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [workspaceId]);
 
   // =====================================================
-  // LOAD RECENT ACTIVITY
+  // LOAD RECENT ACTIVITY FOR THE SELECTED WORKSPACE
   // =====================================================
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadRecentActivity = async () => {
-      try {
-        const data = await getActivities();
-
-        setActivities(
-          Array.isArray(data) ? data : []
-        );
-      } catch (error) {
-        console.error(
-          "Failed to load recent activities:",
-          error
-        );
-
+      if (!workspaceId) {
         setActivities([]);
+        return;
+      }
+
+      setActivities([]);
+
+      try {
+        const data = await getActivities(workspaceId);
+        const activityList = Array.isArray(data) ? data : [];
+
+        const recentActivities = activityList
+          .slice()
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt || b.updatedAt || 0).getTime() -
+              new Date(a.createdAt || a.updatedAt || 0).getTime()
+          )
+          .slice(0, 5);
+
+        if (!cancelled) {
+          setActivities(recentActivities);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error("Failed to load recent activities:", err);
+          setActivities([]);
+        }
       }
     };
 
     loadRecentActivity();
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [workspaceId]);
 
   // =====================================================
   // CREATE WORKSPACE
@@ -252,30 +234,11 @@ const Dashboard = () => {
         );
       }
 
-      const workspaceId =
-        workspace._id ||
-        workspace.id;
+      const newWorkspaceId = String(workspace._id || workspace.id);
 
-      // Add newly created workspace
-      setWorkspaces((previous) => [
-        workspace,
-        ...previous,
-      ]);
-
-      // Make new workspace active
-      setActiveWorkspaceId(
-        workspaceId
-      );
-
-      // Load boards of new workspace
-      const boardList =
-        await getBoards(workspaceId);
-
-      setBoards(
-        Array.isArray(boardList)
-          ? boardList
-          : []
-      );
+      // Select the newly created workspace through shared context.
+      localStorage.setItem("selectedWorkspaceId", newWorkspaceId);
+      await loadWorkspaces();
 
       // Clear form
       setWorkspaceName("");
@@ -290,8 +253,8 @@ const Dashboard = () => {
 
       setError(
         err.response?.data?.message ||
-          err.message ||
-          "Failed to create workspace."
+        err.message ||
+        "Failed to create workspace."
       );
     } finally {
       setCreatingWorkspace(false);
@@ -319,7 +282,7 @@ const Dashboard = () => {
     if (!boardName || creating) return;
 
     // Don't automatically create workspace
-    if (!activeWorkspaceId) {
+    if (!workspaceId) {
       setError(
         "Please create a workspace first."
       );
@@ -333,7 +296,7 @@ const Dashboard = () => {
       const newBoard =
         await createBoard(
           boardName,
-          activeWorkspaceId
+          workspaceId
         );
 
       if (
@@ -360,8 +323,8 @@ const Dashboard = () => {
 
       setError(
         err.response?.data?.message ||
-          err.message ||
-          "Failed to create board. Please try again."
+        err.message ||
+        "Failed to create board. Please try again."
       );
     } finally {
       setCreating(false);
@@ -455,8 +418,8 @@ const Dashboard = () => {
             NO WORKSPACE
         ================================================= */}
 
-        {!loadingBoards &&
-        workspaces.length === 0 ? (
+        {!workspacesLoading &&
+          workspaces.length === 0 ? (
           <Box
             sx={{
               minHeight:
@@ -497,9 +460,9 @@ const Dashboard = () => {
                   justifyContent:
                     "center",
                   background:
-                    "linear-gradient(135deg, #3B82F6, #14B8A6)",
+                    "linear-gradient(135deg, #A9744F, #3F342C)",
                   boxShadow:
-                    "0 12px 25px rgba(59,130,246,0.20)",
+                    "0 12px 25px rgba(169,116,79,0.20)",
                 }}
               >
                 <ViewKanbanIcon
@@ -516,7 +479,7 @@ const Dashboard = () => {
                 variant="h4"
                 sx={{
                   fontWeight: 700,
-                  color: "#172033",
+                  color: "#3F342C",
                   mb: 1,
                 }}
               >
@@ -527,7 +490,7 @@ const Dashboard = () => {
 
               <Typography
                 sx={{
-                  color: "#718096",
+                  color: "#77716C",
                   fontSize: 16,
                   lineHeight: 1.6,
                   mb: 3.5,
@@ -560,29 +523,29 @@ const Dashboard = () => {
                   mb: 1.5,
 
                   "& .MuiOutlinedInput-root":
-                    {
-                      borderRadius:
-                        "12px",
-                      bgcolor:
-                        "#FFFFFF",
+                  {
+                    borderRadius:
+                      "12px",
+                    bgcolor:
+                      "#FFFFFF",
 
-                      "& fieldset": {
-                        borderColor:
-                          "#D7DEE8",
-                      },
-
-                      "&:hover fieldset":
-                        {
-                          borderColor:
-                            "#3B82F6",
-                        },
-
-                      "&.Mui-focused fieldset":
-                        {
-                          borderColor:
-                            "#3B82F6",
-                        },
+                    "& fieldset": {
+                      borderColor:
+                        "#E8E3DE",
                     },
+
+                    "&:hover fieldset":
+                    {
+                      borderColor:
+                        "#A9744F",
+                    },
+
+                    "&.Mui-focused fieldset":
+                    {
+                      borderColor:
+                        "#A9744F",
+                    },
+                  },
                 }}
               />
 
@@ -618,15 +581,15 @@ const Dashboard = () => {
                   fontSize: 16,
                   fontWeight: 600,
                   bgcolor:
-                    "#3B82F6",
+                    "#A9744F",
                   boxShadow:
                     "none",
 
                   "&:hover": {
                     bgcolor:
-                      "#2563EB",
+                      "#8F5E3D",
                     boxShadow:
-                      "0 6px 15px rgba(59,130,246,0.25)",
+                      "0 6px 15px rgba(169,116,79,0.25)",
                   },
                 }}
               >
@@ -680,7 +643,7 @@ const Dashboard = () => {
                 }}
                 sx={{
                   bgcolor:
-                    "#3B82F6",
+                    "#A9744F",
                   textTransform:
                     "none",
                   fontWeight: 600,
@@ -692,7 +655,7 @@ const Dashboard = () => {
 
                   "&:hover": {
                     bgcolor:
-                      "#2563EB",
+                      "#8F5E3D",
                   },
                 }}
               >
@@ -701,21 +664,18 @@ const Dashboard = () => {
             </Box>
 
             {/* OVERVIEW */}
-
-            <OverviewCards />
+            <OverviewCards workspaceId={workspaceId} />
 
             {/* BOARDS */}
 
             <BoardsSection
               boards={boards}
-              loading={
-                loadingBoards
-              }
+              loading={boardsLoading}
               onCreateBoard={
                 handleCreateBoard
               }
               onViewAll={
-                handleViewAll
+                () => navigate("/myboards")
               }
               onOpenBoard={
                 handleOpenBoard
@@ -724,13 +684,13 @@ const Dashboard = () => {
 
             {/* CHAT */}
 
-            {activeWorkspaceId && (
+            {workspaceId && (
               <Box
                 sx={{ mt: 3 }}
               >
                 <WorkspaceChat
                   workspaceId={
-                    activeWorkspaceId
+                    workspaceId
                   }
                 />
               </Box>
@@ -837,14 +797,14 @@ const Dashboard = () => {
               }
               sx={{
                 bgcolor:
-                  "#3B82F6",
+                  "#A9744F",
                 textTransform:
                   "none",
                 fontWeight: 600,
 
                 "&:hover": {
                   bgcolor:
-                    "#2563EB",
+                    "#8F5E3D",
                 },
               }}
             >
@@ -935,13 +895,13 @@ const Dashboard = () => {
               }
               sx={{
                 bgcolor:
-                  "#3B82F6",
+                  "#A9744F",
                 textTransform:
                   "none",
 
                 "&:hover": {
                   bgcolor:
-                    "#2563EB",
+                    "#8F5E3D",
                 },
               }}
             >

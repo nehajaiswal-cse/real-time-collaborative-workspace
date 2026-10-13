@@ -3,12 +3,12 @@ import {
   Avatar,
   Box,
   CircularProgress,
-  Paper,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import SettingsCard from "./SettingsCard.jsx";
 
 const ProfileSettings = ({ user, loading, error }) => {
   const name = user?.name || "";
@@ -21,35 +21,11 @@ const ProfileSettings = ({ user, loading, error }) => {
     : "";
 
   return (
-    <Paper
-      elevation={0}
-      sx={{
-        p: { xs: 2, sm: 3 },
-        border: "1px solid #E8E3DE",
-        borderRadius: 3,
-        bgcolor: "#FFFFFF",
-      }}
+    <SettingsCard
+      icon={PersonOutlineOutlinedIcon}
+      title="Profile"
+      subtitle="Your account information"
     >
-      <Stack direction="row" spacing={1.5} alignItems="center" mb={3}>
-        <PersonOutlineOutlinedIcon
-          sx={{ color: "#A9744F", fontSize: 27 }}
-        />
-
-        <Box>
-          <Typography
-            fontWeight={700}
-            color="#3F342C"
-            fontSize={18}
-          >
-            Profile
-          </Typography>
-
-          <Typography variant="body2" color="#77716C">
-            Your account information
-          </Typography>
-        </Box>
-      </Stack>
-
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
@@ -57,26 +33,21 @@ const ProfileSettings = ({ user, loading, error }) => {
       )}
 
       {loading ? (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            py: 5,
-          }}
-        >
+        <Box sx={{ display: "flex", justifyContent: "center", py: 5 }}>
           <CircularProgress sx={{ color: "#A9744F" }} />
         </Box>
       ) : (
         <>
           <Stack
-            direction="row"
-            spacing={2}
-            alignItems="center"
+            direction={{ xs: "column", sm: "row" }}
+            alignItems={{ xs: "flex-start", sm: "center" }}
+            spacing={2.5}
             sx={{
               mb: 3,
               p: 1.5,
               borderRadius: 2,
               bgcolor: "#FFFCFA",
+              minWidth: 0,
             }}
           >
             <Avatar
@@ -84,6 +55,7 @@ const ProfileSettings = ({ user, loading, error }) => {
               sx={{
                 width: 64,
                 height: 64,
+                flexShrink: 0,
                 bgcolor: "#A9744F",
                 fontSize: 24,
                 fontWeight: 600,
@@ -92,26 +64,26 @@ const ProfileSettings = ({ user, loading, error }) => {
               {name ? name.charAt(0).toUpperCase() : "U"}
             </Avatar>
 
-            <Box sx={{ minWidth: 0 }}>
+            <Box sx={{ minWidth: 0, width: "100%" }}>
               <Typography
-                fontWeight={700}
-                color="#3F342C"
                 sx={{
+                  fontWeight: 700,
+                  color: "#3F342C",
+                  lineHeight: 1.4,
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
                 }}
               >
-                {name || "User"}
+                {name || "Name not available"}
               </Typography>
 
               <Typography
                 variant="body2"
-                color="#77716C"
                 sx={{
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
+                  mt: 0.5,
+                  color: "#77716C",
+                  overflowWrap: "anywhere",
                 }}
               >
                 {email || "Email not available"}
@@ -143,20 +115,25 @@ const ProfileSettings = ({ user, loading, error }) => {
               value={name}
               fullWidth
               size="small"
-              InputProps={{ readOnly: true }}
+              slotProps={{ input: { readOnly: true } }}
             />
-
             <TextField
               label="Email address"
               value={email}
               fullWidth
               size="small"
-              InputProps={{ readOnly: true }}
+              slotProps={{ input: { readOnly: true } }}
             />
           </Stack>
+
+          <Alert severity="info" sx={{ mt: 2.5, alignItems: "center" }}>
+            Profile information is loaded from your account. Editing and saving
+            profile details requires a profile-update API, which is not present
+            in the current backend.
+          </Alert>
         </>
       )}
-    </Paper>
+    </SettingsCard>
   );
 };
 

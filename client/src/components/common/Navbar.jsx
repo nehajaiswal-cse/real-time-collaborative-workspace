@@ -18,8 +18,8 @@ import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import MailIcon from "@mui/icons-material/Mail";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import MoreIcon from "@mui/icons-material/MoreVert";
+import NotificationBell from "../notifications/NotificationBell";
 
 const PRIMARY_COLOR = "#A9744F";
 
@@ -35,7 +35,7 @@ const Search = styled("div")(({ theme }) => ({
   marginLeft: theme.spacing(3),
   width: "100%",
 
-  [theme.breakpoints.up("sm")]: {
+  [theme.breakpoints.up("nsm")]: {
     width: "260px",
   },
 
@@ -169,17 +169,10 @@ const Navbar = ({ onMenuClick }) => {
             </Badge>
           </IconButton>
 
-          {/* Notifications */}
-          <IconButton
-            size="large"
-            aria-label="show notifications"
-            sx={{ color: "#ffffff" }}
-          >
-            <Badge badgeContent={17} color="error">
-              <NotificationsIcon />
-            </Badge>
-          </IconButton>
-
+         {/* Notifications */}
+          <Box sx={{ color: "#ffffff" }}>
+            <NotificationBell />
+          </Box>
           {/* Account */}
           <IconButton
             size="large"

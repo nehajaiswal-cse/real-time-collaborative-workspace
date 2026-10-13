@@ -1,20 +1,27 @@
 
-import axios from "axios";
-
-const API_URL = "http://localhost:5000/api/activities";
+import axiosInstance from "./axiosInstance";
 
 export const getActivities = async (workspaceId) => {
   if (!workspaceId) {
     throw new Error("Workspace ID is required");
   }
 
-  const response = await axios.get(API_URL, {
-    params: {
-      workspaceId,
-    },
-    withCredentials: true,
+  const response = await axiosInstance.get("/activities", {
+    params: { workspaceId },
   });
 
-  return response.data.activities || response.data || [];
+  const result = response.data?.data ?? response.data;
+
+  if (Array.isArray(result)) {
+    return result;
+  }
+
+  if (Array.isArray(result?.activities)) {
+    return result.activities;
+  }
+
+  return [];
 };
+
+
 

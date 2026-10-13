@@ -152,27 +152,30 @@ export const WorkspaceProvider = ({ children }) => {
   // Switch workspace
   // ==========================================
 
-  const switchWorkspace = (workspace) => {
-    if (!workspace) return;
+  
+const switchWorkspace = (workspace) => {
+  if (!workspace) return;
 
-    const workspaceId =
-      workspace._id || workspace.id;
+  const workspaceId = String(
+    workspace._id || workspace.id || ""
+  );
 
-    if (!workspaceId) return;
+  if (!workspaceId) return;
 
-    console.log(
-      "SWITCHING WORKSPACE:",
-      workspace.name,
-      workspaceId
-    );
+  const workspaceToSelect = workspaces.find(
+    (item) =>
+      String(item._id || item.id) === workspaceId
+  );
 
-    setSelectedWorkspace(workspace);
+  if (!workspaceToSelect) return;
 
-    localStorage.setItem(
-      "selectedWorkspaceId",
-      workspaceId
-    );
-  };
+  setSelectedWorkspace(workspaceToSelect);
+
+  localStorage.setItem(
+    "selectedWorkspaceId",
+    workspaceId
+  );
+};
 
   return (
     <WorkspaceContext.Provider

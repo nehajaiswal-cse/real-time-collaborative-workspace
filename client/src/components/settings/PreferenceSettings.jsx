@@ -1,12 +1,29 @@
-import {
-  Box,
-  Paper,
-  Stack,
-  Switch,
-  Typography,
-} from "@mui/material";
+import { Box, Divider, Stack, Switch, Typography } from "@mui/material";
 import PaletteOutlinedIcon from "@mui/icons-material/PaletteOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
+import SettingsCard from "./SettingsCard.jsx";
+
+const ACCENT = "#A9744F";
+
+const switchSx = {
+  "& .MuiSwitch-switchBase.Mui-checked": { color: ACCENT },
+  "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+    backgroundColor: ACCENT,
+  },
+};
+
+const NOTIFICATION_OPTIONS = [
+  {
+    key: "emailNotifications",
+    title: "Email notifications",
+    description: "Receive important updates and account emails.",
+  },
+  {
+    key: "workspaceNotifications",
+    title: "Workspace notifications",
+    description: "Stay updated about activity in your workspace.",
+  },
+];
 
 const PreferenceSettings = ({ preferences, onChange }) => {
   const updatePreference = (key, value) => {
@@ -16,96 +33,45 @@ const PreferenceSettings = ({ preferences, onChange }) => {
     });
   };
 
-  const notificationOptions = [
-    {
-      key: "emailNotifications",
-      title: "Email notifications",
-      description: "Receive important updates and account emails.",
-    },
-    {
-      key: "workspaceNotifications",
-      title: "Workspace notifications",
-      description: "Stay updated about activity in your workspace.",
-    },
-  ];
-
   return (
-    <Paper
-      elevation={0}
-      sx={{
-        p: { xs: 2, sm: 3 },
-        border: "1px solid #E8E3DE",
-        borderRadius: 3,
-        bgcolor: "#FFFFFF",
-      }}
+    <SettingsCard
+      icon={PaletteOutlinedIcon}
+      title="Preferences"
+      subtitle="Customize your SyncSpace experience"
     >
-      <Stack direction="row" spacing={1.5} alignItems="center" mb={3}>
-        <PaletteOutlinedIcon
-          sx={{ color: "#A9744F", fontSize: 27 }}
-        />
-
-        <Box>
-          <Typography
-            fontWeight={700}
-            color="#3F342C"
-            fontSize={18}
-          >
-            Preferences
-          </Typography>
-
-          <Typography variant="body2" color="#77716C">
-            Customize your SyncSpace experience
-          </Typography>
-        </Box>
-      </Stack>
-
-      {/* Appearance */}
       <Box
         sx={{
           p: 2,
+          mb: 2.5,
           borderRadius: 2,
           bgcolor: "#FFFCFA",
           border: "1px solid #E8E3DE",
-          mb: 3,
         }}
       >
-        <Typography
-          fontWeight={600}
-          color="#3F342C"
-          mb={0.5}
-        >
+        <Typography fontWeight={600} color="#3F342C" mb={0.5}>
           Appearance
         </Typography>
-
         <Typography variant="body2" color="#77716C">
           SyncSpace currently uses the default light appearance.
         </Typography>
       </Box>
 
-      {/* Notifications */}
-      <Stack
-        direction="row"
-        spacing={1.5}
-        alignItems="center"
-        mb={1}
-      >
-        <NotificationsNoneOutlinedIcon
-          sx={{ color: "#A9744F", fontSize: 26 }}
-        />
+      <Divider sx={{ borderColor: "#F0EBE7", mb: 2 }} />
 
+      <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1 }}>
+        <NotificationsNoneOutlinedIcon sx={{ color: ACCENT, fontSize: 26 }} />
         <Box>
-          <Typography fontWeight={600} color="#3F342C">
+          <Typography sx={{ fontWeight: 600, color: "#3F342C" }}>
             Notifications
           </Typography>
-
-          <Typography variant="body2" color="#77716C">
-            Choose which notifications you want to receive.
+          <Typography variant="body2" sx={{ mt: 0.25, color: "#77716C" }}>
+            Choose which notification preferences to keep enabled.
           </Typography>
         </Box>
       </Stack>
 
       <Box>
-        {notificationOptions.map((item, index) => (
+        {NOTIFICATION_OPTIONS.map((item, index) => (
           <Box
             key={item.key}
             sx={{
@@ -113,49 +79,27 @@ const PreferenceSettings = ({ preferences, onChange }) => {
               alignItems: "center",
               justifyContent: "space-between",
               gap: 2,
-              py: 1.8,
+              py: 2,
               borderBottom:
-                index !== notificationOptions.length - 1
+                index < NOTIFICATION_OPTIONS.length - 1
                   ? "1px solid #F0EBE7"
                   : "none",
             }}
           >
             <Box sx={{ minWidth: 0 }}>
-              <Typography
-                fontWeight={600}
-                color="#3F342C"
-              >
+              <Typography sx={{ fontWeight: 600, color: "#3F342C" }}>
                 {item.title}
               </Typography>
-
-              <Typography
-                variant="body2"
-                color="#77716C"
-              >
+              <Typography variant="body2" sx={{ mt: 0.25, color: "#77716C" }}>
                 {item.description}
               </Typography>
             </Box>
-
             <Switch
-              checked={Boolean(preferences[item.key])}
+              checked={Boolean(preferences?.[item.key])}
               onChange={(event) =>
-                updatePreference(
-                  item.key,
-                  event.target.checked
-                )
+                updatePreference(item.key, event.target.checked)
               }
-              sx={{
-                flexShrink: 0,
-
-                "& .MuiSwitch-switchBase.Mui-checked": {
-                  color: "#A9744F",
-                },
-
-                "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
-                  {
-                    backgroundColor: "#A9744F",
-                  },
-              }}
+              sx={switchSx}
             />
           </Box>
         ))}
@@ -163,13 +107,13 @@ const PreferenceSettings = ({ preferences, onChange }) => {
 
       <Typography
         variant="caption"
-        color="#8A817A"
-        display="block"
-        mt={2}
+        sx={{ display: "block", mt: 2, color: "#77716C", lineHeight: 1.6 }}
       >
-        Your notification preferences are saved in this browser.
+        Preferences are saved in this browser. Notification switches store
+        your choices; they do not send or suppress actual notifications unless
+        notification delivery is connected to the backend.
       </Typography>
-    </Paper>
+    </SettingsCard>
   );
 };
 

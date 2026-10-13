@@ -9,6 +9,7 @@ import {
 } from "../controllers/boardController.js";
 
 import authMiddleware from "../middleware/authmiddleware.js";
+import { getWorkspaceStats } from "../controllers/dashboardController.js";
 
 const router = express.Router();
 
@@ -21,6 +22,9 @@ router.post("/", createBoard);
 // Get all boards of a workspace
 router.get("/workspace/:workspaceId", getWorkspaceBoards);
 
+// Add before router.get("/:id", getBoardById)
+router.get("/workspace/:workspaceId/stats", getWorkspaceStats);
+
 // Get single board
 router.get("/:id", getBoardById);
 
@@ -29,5 +33,7 @@ router.put("/:id", updateBoard);
 
 // Delete board
 router.delete("/:id", deleteBoard);
+
+
 
 export default router;
