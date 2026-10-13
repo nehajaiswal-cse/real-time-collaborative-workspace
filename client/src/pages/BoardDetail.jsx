@@ -39,6 +39,7 @@ import {
   deleteComment,
 } from "../api/commentApi.js";
 import{getWorkspaceMembers} from "../api/workspaceApi.js";
+import WorkspaceDocuments from "../components/documents/WorkspaceDocuments.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -85,6 +86,8 @@ const [commentsLoading, setCommentsLoading] = useState(false);
 const [commentSubmitting, setCommentSubmitting] = useState(false);
 const [editingCommentId, setEditingCommentId] = useState(null);
 const [editingCommentText, setEditingCommentText] = useState("");
+
+const [showDocuments, setShowDocuments] = useState(false);
 
   const fetchBoardDetails = async () => {
     try {
@@ -467,6 +470,21 @@ const handleDeleteComment = async (commentId) => {
             </Typography>
           </Box>
           <Button
+            variant="outlined"
+            onClick={() => setShowDocuments((prev) => !prev)}
+            sx={{
+              borderColor: "#A9744F",
+              color: "#A9744F",
+              textTransform: "none",
+              "&:hover": {
+                 borderColor: "#8B5E3C",
+                 backgroundColor: "rgba(169, 116, 79, 0.08)",
+              },
+            }}
+          >
+           {showDocuments ? "Back to Board" : "Documents"}
+          </Button>
+          <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setNewListOpen(true)}
@@ -488,11 +506,15 @@ const handleDeleteComment = async (commentId) => {
         )}
 
         {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", my: 8 }}>
-            <CircularProgress sx={{ color: "#A9744F" }} />
-          </Box>
-        ) : (
-          <DragDropContext onDragEnd={handleDragEnd}>
+  <Box sx={{ display: "flex", justifyContent: "center", my: 8 }}>
+    <CircularProgress sx={{ color: "#A9744F" }} />
+  </Box>
+) : showDocuments ? (
+  <WorkspaceDocuments
+    workspaceId={board?.workspace?._id || board?.workspace}
+  />
+) : (
+  <DragDropContext onDragEnd={handleDragEnd}>
             <Box
               sx={{
                 display: "flex",
