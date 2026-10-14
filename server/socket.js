@@ -48,8 +48,7 @@ export const initSocket = (server) => {
     console.log(
       `Socket connected: ${socket.id}, User: ${socket.userId}`
     );
-
-    // Join workspace
+    
     socket.on("workspace:join", async (workspaceId) => {
       try {
         if (!workspaceId) {
