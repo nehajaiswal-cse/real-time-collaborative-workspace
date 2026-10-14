@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 
 import Navbar from "../components/common/Navbar.jsx";
+import useResponsiveSidebar from "../hooks/useResponsiveSidebar.js";
 import Sidebar from "../components/common/Sidebar.jsx";
 import BoardsHeader from "../components/boards/BoardsHeader";
 import BoardsGrid from "../components/boards/BoardsGrid";
@@ -29,7 +30,7 @@ const MyBoards = () => {
   } = useWorkspace();
 
   const [boards, setBoards] = useState([]);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useResponsiveSidebar();
   const [loading, setLoading] = useState(true);
 
   const [createBoardOpen, setCreateBoardOpen] =

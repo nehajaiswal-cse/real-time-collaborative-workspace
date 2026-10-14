@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 
 import {
@@ -25,14 +24,21 @@ import {
   markAllNotificationsAsRead,
 } from "../../api/notificationApi";
 
-const NotificationBell = () => {
+const NotificationBell = ({
+  // Lets another element (the mobile "more" menu) open this list.
+  externalAnchorEl = null,
+  onExternalClose,
+  // Reports the unread count so the navbar can show badges.
+  onUnreadChange,
+}) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const open = Boolean(anchorEl);
+  const menuAnchorEl = anchorEl || externalAnchorEl;
+  const open = Boolean(menuAnchorEl);
 
   const loadUnreadCount = async () => {
     try {
@@ -93,6 +99,15 @@ const NotificationBell = () => {
     };
   }, []);
 
+  // Opened from the mobile menu -> load the list
+  useEffect(() => {
+    if (externalAnchorEl) loadNotifications();
+  }, [externalAnchorEl]);
+
+  useEffect(() => {
+    onUnreadChange?.(unreadCount);
+  }, [unreadCount, onUnreadChange]);
+
   const handleOpen = (event) => {
     setAnchorEl(event.currentTarget);
     loadNotifications();
@@ -100,6 +115,7 @@ const NotificationBell = () => {
 
   const handleClose = () => {
     setAnchorEl(null);
+    onExternalClose?.();
   };
 
   const handleMarkAsRead = async (notificationId) => {
@@ -160,7 +176,7 @@ const NotificationBell = () => {
       </IconButton>
 
       <Menu
-        anchorEl={anchorEl}
+        anchorEl={menuAnchorEl}
         open={open}
         onClose={handleClose}
         slotProps={{
@@ -263,3 +279,4 @@ const NotificationBell = () => {
 };
 
 export default NotificationBell;
+

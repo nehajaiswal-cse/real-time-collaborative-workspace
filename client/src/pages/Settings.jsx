@@ -3,6 +3,7 @@ import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
 import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
 
 import Navbar from "../components/common/Navbar.jsx";
+import useResponsiveSidebar from "../hooks/useResponsiveSidebar.js";
 import Sidebar from "../components/common/Sidebar.jsx";
 
 import SettingsHeader from "../components/settings/SettingsHeader.jsx";
@@ -70,7 +71,7 @@ const cardSlotSx = {
 };
 
 const Settings = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useResponsiveSidebar();
   const [user, setUser] = useState(null);
   const [workspaces, setWorkspaces] = useState([]);
   const [workspaceId, setWorkspaceId] = useState("");
@@ -291,3 +292,4 @@ const Settings = () => {
 };
 
 export default Settings;
+

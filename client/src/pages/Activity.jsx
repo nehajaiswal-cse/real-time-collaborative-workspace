@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
@@ -7,6 +6,7 @@ import {
 } from "@mui/material";
 
 import Navbar from "../components/common/Navbar.jsx";
+import useResponsiveSidebar from "../hooks/useResponsiveSidebar.js";
 import Sidebar from "../components/common/Sidebar.jsx";
 import ActivityHeader from "../components/activity/ActivityHeader.jsx";
 import ActivityFilters from "../components/activity/ActivityFilters.jsx";
@@ -16,7 +16,7 @@ import { useWorkspace } from "../context/workspaceContext.jsx";
 
 const Activity = () => {
     const { selectedWorkspace } = useWorkspace();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useResponsiveSidebar();
   const [activities, setActivities] = useState([]);
   const [search, setSearch] = useState("");
   const [type, setType] = useState("all");

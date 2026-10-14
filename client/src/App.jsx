@@ -32,7 +32,8 @@ const App = () => {
       <Route path="/myboards" element={<MyBoards />} />
       <Route path="/boards/:boardId" element={<BoardDetail />} />
       <Route path="/members" element={<Members />} />
-
+        
+      
       </Route>
       <Route path="/activity" element={<Activity />} />
       <Route path="/settings" element={<Settings />} />
