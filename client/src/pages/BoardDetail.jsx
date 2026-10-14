@@ -159,47 +159,102 @@ const [showDocuments, setShowDocuments] = useState(false);
   fetchMembers();
 }, [board?.workspace]);
 
-  useEffect(() => {
-    let currentWorkspaceId = null;
 
-    fetchBoardDetails().then((wsId) => {
-      if (wsId) {
-        currentWorkspaceId = wsId;
-        socket.emit("workspace:join", wsId);
-      }
-    });
+useEffect(() => {
+  let currentWorkspaceId = null;
+  let cancelled = false;
 
-    const handleCardCreated = (card) => {
-      setCards((prev) => (prev.some((c) => c._id === card._id) ? prev : [...prev, card]));
-    };
+  const handleCardCreated = (card) => {
+    setCards((prev) =>
+      prev.some((c) => c._id === card._id) ? prev : [...prev, card]
+    );
+  };
 
-    const handleCardUpdated = (updatedCard) => {
-      setCards((prev) => prev.map((c) => (c._id === updatedCard._id ? updatedCard : c)));
-    };
+  const handleCardUpdated = (updatedCard) => {
+    setCards((prev) =>
+      prev.map((c) => (c._id === updatedCard._id ? updatedCard : c))
+    );
+  };
 
-    const handleCardDeleted = (cardId) => {
-      setCards((prev) => prev.filter((c) => c._id !== cardId));
-    };
+  const handleCardDeleted = (cardId) => {
+    setCards((prev) => prev.filter((c) => c._id !== cardId));
+  };
 
-    const handleCardMoved = (movedCard) => {
-      setCards((prev) => prev.map((c) => (c._id === movedCard._id ? movedCard : c)));
-    };
+  const handleCardMoved = (movedCard) => {
+    setCards((prev) =>
+      prev.map((c) => (c._id === movedCard._id ? movedCard : c))
+    );
+  };
 
-    socket.on("card:created", handleCardCreated);
-    socket.on("card:updated", handleCardUpdated);
-    socket.on("card:deleted", handleCardDeleted);
-    socket.on("card:moved", handleCardMoved);
+  
+const handleListCreated = (newList) => {
+  const eventBoardId =
+    typeof newList.board === "object"
+      ? newList.board?._id
+      : newList.board;
 
-    return () => {
-      socket.off("card:created", handleCardCreated);
-      socket.off("card:updated", handleCardUpdated);
-      socket.off("card:deleted", handleCardDeleted);
-      socket.off("card:moved", handleCardMoved);
-      if (currentWorkspaceId) {
-        socket.emit("workspace:leave", currentWorkspaceId);
-      }
-    };
-  }, [boardId]);
+  if (eventBoardId?.toString() !== boardId.toString()) return;
+
+  setLists((prev) => {
+    if (prev.some((list) => list._id === newList._id)) {
+      return prev;
+    }
+
+    return [...prev, newList].sort(
+      (a, b) => (a.position ?? 0) - (b.position ?? 0)
+    );
+  });
+};
+
+
+  const joinWorkspace = (workspaceId) => {
+    if (cancelled || !workspaceId) return;
+
+    currentWorkspaceId = workspaceId;
+    socket.emit("workspace:join", workspaceId);
+  };
+
+  const handleConnect = () => {
+    if (currentWorkspaceId) {
+      socket.emit("workspace:join", currentWorkspaceId);
+    }
+  };
+
+  socket.on("connect", handleConnect);
+  socket.on("card:created", handleCardCreated);
+  socket.on("card:updated", handleCardUpdated);
+  socket.on("card:deleted", handleCardDeleted);
+  socket.on("card:moved", handleCardMoved);
+  socket.on("list:created", handleListCreated);
+  if (!socket.connected) {
+    socket.connect();
+  }
+
+  fetchBoardDetails().then((workspaceId) => {
+    if (!workspaceId || cancelled) return;
+
+    currentWorkspaceId = workspaceId;
+
+    if (socket.connected) {
+      joinWorkspace(workspaceId);
+    }
+  });
+
+  return () => {
+    cancelled = true;
+
+    socket.off("connect", handleConnect);
+    socket.off("card:created", handleCardCreated);
+    socket.off("card:updated", handleCardUpdated);
+    socket.off("card:deleted", handleCardDeleted);
+    socket.off("card:moved", handleCardMoved);
+    socket.off("list:created", handleListCreated);
+
+    if (currentWorkspaceId && socket.connected) {
+      socket.emit("workspace:leave", currentWorkspaceId);
+    }
+  };
+}, [boardId]);
 
   const handleDragEnd = async (result) => {
     const { destination, source, draggableId } = result;
@@ -265,6 +320,7 @@ const [showDocuments, setShowDocuments] = useState(false);
       setLists((prev) => [...prev, data.list]);
       setNewListName("");
       setNewListOpen(false);
+      
     } catch (err) {
       alert(err.message);
     }
