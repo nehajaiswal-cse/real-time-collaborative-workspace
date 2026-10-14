@@ -77,11 +77,6 @@ export const getWorkspaceBoards = async (req, res) => {
       user: req.user.id
     });
 
-
-    // const allMemberships = await WorkspaceMember.find({});
-    // console.log("ALL WORKSPACE MEMBERSHIPS:");
-    // console.log(allMemberships);
-
     if (!membership) {
       return res.status(403).json({
         message: "You are not a member of this workspace"
@@ -100,8 +95,6 @@ export const getWorkspaceBoards = async (req, res) => {
     })
       .populate("createdBy", "name email")
       .sort({ createdAt: -1 });
-
-      
 
     await cacheBoards(workspaceId, boards);  
 

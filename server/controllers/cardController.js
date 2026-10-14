@@ -7,7 +7,7 @@ import { getIO } from "../socket.js";
 import createActivity from "../utils/createActivity.js";
 import createNotification from "../utils/createNotification.js"
 
-// Create Card
+
 export const createCard = async (req, res) => {
   try {
     const {
@@ -26,40 +26,32 @@ export const createCard = async (req, res) => {
       });
     }
 
-    // Check list
     const list = await List.findById(listId);
-
     if (!list) {
       return res.status(404).json({
         message: "List not found",
       });
     }
 
-    // Check board
     const board = await Board.findById(list.board);
-
     if (!board) {
       return res.status(404).json({
         message: "Board not found",
       });
     }
 
-    // Check workspace membership
     const membership = await WorkspaceMember.findOne({
       workspace: board.workspace,
       user: req.user.id,
     });
-
     if (!membership) {
       return res.status(403).json({
         message: "You are not a member of this workspace",
       });
     }
 
-    // If assignedTo is provided, check user exists
     if (assignedTo) {
       const assignedUser = await User.findById(assignedTo);
-
       if (!assignedUser) {
         return res.status(404).json({
           message: "Assigned user not found",
@@ -87,17 +79,14 @@ export const createCard = async (req, res) => {
 
     io.to(`workspace:${board.workspace}`).emit("card:created", populatedCard);
 
-   await createActivity({
-  type: "CARD_MOVED", /*CARD_CREATED*/
+  await createActivity({
+  type: "CARD_MOVED", 
   userId: req.user.id,
   workspaceId: board.workspace,
   boardId: board._id,
   cardId: card._id,
   message: `created card "${card.title}"`,
 });
-console.log("Assigned user:", assignedTo);
-console.log("Logged-in user:", req.user.id);
-console.log("Workspace:", board.workspace);
 
 
 if (assignedTo) {
@@ -126,7 +115,6 @@ if (assignedTo) {
   }
 };
 
-// Get all cards of a list
 export const getListCards = async (req, res) => {
   try {
     const { listId } = req.params;
@@ -177,7 +165,7 @@ export const getListCards = async (req, res) => {
   }
 };
 
-// Get single card
+
 export const getCardById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -224,7 +212,6 @@ export const getCardById = async (req, res) => {
   }
 };
 
-// Update Card
 export const updateCard = async (req, res) => {
   try {
     const { id } = req.params;
@@ -348,7 +335,6 @@ export const updateCard = async (req, res) => {
   }
 };
 
-// Delete Card
 export const deleteCard = async (req, res) => {
   try {
     const { id } = req.params;
@@ -406,7 +392,6 @@ export const deleteCard = async (req, res) => {
   }
 };
 
-// Move Card to another List
 export const moveCard = async (req, res) => {
   try {
     const { id } = req.params;
@@ -496,11 +481,11 @@ export const moveCard = async (req, res) => {
       movedCard
     );
 
-    await createActivity({
+  await createActivity({
   type: "CARD_MOVED",
   userId: req.user.id,
-  workspaceId,
-  boardId,
+  workspaceId:board.workspace,
+  boardId:board._id,
   cardId: card._id,
   message: `moved card "${card.title}"`,
 });

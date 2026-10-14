@@ -40,6 +40,7 @@ import {
   deleteComment,
 } from "../api/commentApi.js";
 import{getWorkspaceMembers} from "../api/workspaceApi.js";
+import WorkspaceDocuments from "../components/documents/WorkspaceDocuments.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -86,6 +87,8 @@ const [commentsLoading, setCommentsLoading] = useState(false);
 const [commentSubmitting, setCommentSubmitting] = useState(false);
 const [editingCommentId, setEditingCommentId] = useState(null);
 const [editingCommentText, setEditingCommentText] = useState("");
+
+const [showDocuments, setShowDocuments] = useState(false);
 
   const fetchBoardDetails = async () => {
     try {
@@ -157,47 +160,102 @@ const [editingCommentText, setEditingCommentText] = useState("");
   fetchMembers();
 }, [board?.workspace]);
 
-  useEffect(() => {
-    let currentWorkspaceId = null;
 
-    fetchBoardDetails().then((wsId) => {
-      if (wsId) {
-        currentWorkspaceId = wsId;
-        socket.emit("workspace:join", wsId);
-      }
-    });
+useEffect(() => {
+  let currentWorkspaceId = null;
+  let cancelled = false;
 
-    const handleCardCreated = (card) => {
-      setCards((prev) => (prev.some((c) => c._id === card._id) ? prev : [...prev, card]));
-    };
+  const handleCardCreated = (card) => {
+    setCards((prev) =>
+      prev.some((c) => c._id === card._id) ? prev : [...prev, card]
+    );
+  };
 
-    const handleCardUpdated = (updatedCard) => {
-      setCards((prev) => prev.map((c) => (c._id === updatedCard._id ? updatedCard : c)));
-    };
+  const handleCardUpdated = (updatedCard) => {
+    setCards((prev) =>
+      prev.map((c) => (c._id === updatedCard._id ? updatedCard : c))
+    );
+  };
 
-    const handleCardDeleted = (cardId) => {
-      setCards((prev) => prev.filter((c) => c._id !== cardId));
-    };
+  const handleCardDeleted = (cardId) => {
+    setCards((prev) => prev.filter((c) => c._id !== cardId));
+  };
 
-    const handleCardMoved = (movedCard) => {
-      setCards((prev) => prev.map((c) => (c._id === movedCard._id ? movedCard : c)));
-    };
+  const handleCardMoved = (movedCard) => {
+    setCards((prev) =>
+      prev.map((c) => (c._id === movedCard._id ? movedCard : c))
+    );
+  };
 
-    socket.on("card:created", handleCardCreated);
-    socket.on("card:updated", handleCardUpdated);
-    socket.on("card:deleted", handleCardDeleted);
-    socket.on("card:moved", handleCardMoved);
+  
+const handleListCreated = (newList) => {
+  const eventBoardId =
+    typeof newList.board === "object"
+      ? newList.board?._id
+      : newList.board;
 
-    return () => {
-      socket.off("card:created", handleCardCreated);
-      socket.off("card:updated", handleCardUpdated);
-      socket.off("card:deleted", handleCardDeleted);
-      socket.off("card:moved", handleCardMoved);
-      if (currentWorkspaceId) {
-        socket.emit("workspace:leave", currentWorkspaceId);
-      }
-    };
-  }, [boardId]);
+  if (eventBoardId?.toString() !== boardId.toString()) return;
+
+  setLists((prev) => {
+    if (prev.some((list) => list._id === newList._id)) {
+      return prev;
+    }
+
+    return [...prev, newList].sort(
+      (a, b) => (a.position ?? 0) - (b.position ?? 0)
+    );
+  });
+};
+
+
+  const joinWorkspace = (workspaceId) => {
+    if (cancelled || !workspaceId) return;
+
+    currentWorkspaceId = workspaceId;
+    socket.emit("workspace:join", workspaceId);
+  };
+
+  const handleConnect = () => {
+    if (currentWorkspaceId) {
+      socket.emit("workspace:join", currentWorkspaceId);
+    }
+  };
+
+  socket.on("connect", handleConnect);
+  socket.on("card:created", handleCardCreated);
+  socket.on("card:updated", handleCardUpdated);
+  socket.on("card:deleted", handleCardDeleted);
+  socket.on("card:moved", handleCardMoved);
+  socket.on("list:created", handleListCreated);
+  if (!socket.connected) {
+    socket.connect();
+  }
+
+  fetchBoardDetails().then((workspaceId) => {
+    if (!workspaceId || cancelled) return;
+
+    currentWorkspaceId = workspaceId;
+
+    if (socket.connected) {
+      joinWorkspace(workspaceId);
+    }
+  });
+
+  return () => {
+    cancelled = true;
+
+    socket.off("connect", handleConnect);
+    socket.off("card:created", handleCardCreated);
+    socket.off("card:updated", handleCardUpdated);
+    socket.off("card:deleted", handleCardDeleted);
+    socket.off("card:moved", handleCardMoved);
+    socket.off("list:created", handleListCreated);
+
+    if (currentWorkspaceId && socket.connected) {
+      socket.emit("workspace:leave", currentWorkspaceId);
+    }
+  };
+}, [boardId]);
 
   const handleDragEnd = async (result) => {
     const { destination, source, draggableId } = result;
@@ -263,6 +321,7 @@ const [editingCommentText, setEditingCommentText] = useState("");
       setLists((prev) => [...prev, data.list]);
       setNewListName("");
       setNewListOpen(false);
+      
     } catch (err) {
       alert(err.message);
     }
@@ -468,6 +527,21 @@ const handleDeleteComment = async (commentId) => {
             </Typography>
           </Box>
           <Button
+            variant="outlined"
+            onClick={() => setShowDocuments((prev) => !prev)}
+            sx={{
+              borderColor: "#A9744F",
+              color: "#A9744F",
+              textTransform: "none",
+              "&:hover": {
+                 borderColor: "#8B5E3C",
+                 backgroundColor: "rgba(169, 116, 79, 0.08)",
+              },
+            }}
+          >
+           {showDocuments ? "Back to Board" : "Documents"}
+          </Button>
+          <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setNewListOpen(true)}
@@ -489,11 +563,15 @@ const handleDeleteComment = async (commentId) => {
         )}
 
         {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", my: 8 }}>
-            <CircularProgress sx={{ color: "#A9744F" }} />
-          </Box>
-        ) : (
-          <DragDropContext onDragEnd={handleDragEnd}>
+  <Box sx={{ display: "flex", justifyContent: "center", my: 8 }}>
+    <CircularProgress sx={{ color: "#A9744F" }} />
+  </Box>
+) : showDocuments ? (
+  <WorkspaceDocuments
+    workspaceId={board?.workspace?._id || board?.workspace}
+  />
+) : (
+  <DragDropContext onDragEnd={handleDragEnd}>
             <Box
               sx={{
                 display: "flex",

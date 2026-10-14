@@ -18,7 +18,7 @@ import Sidebar from "../components/common/Sidebar.jsx";
 import BoardsHeader from "../components/boards/BoardsHeader";
 import BoardsGrid from "../components/boards/BoardsGrid";
 
-import { getWorkspaceBoards ,createBoard,updateBoard } from "../api/boardApi.js";
+import { getWorkspaceBoards ,createBoard } from "../api/boardApi.js";
 
 import { useWorkspace } from "../context/workspaceContext.jsx";
 

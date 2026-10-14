@@ -1,6 +1,7 @@
 import List from "../models/list.js";
 import Board from "../models/board.js";
 import WorkspaceMember from "../models/workspaceMember.js";
+import { getIO } from "../socket.js";
 
 // Create List
 export const createList = async (req, res) => {
@@ -13,21 +14,17 @@ export const createList = async (req, res) => {
       });
     }
 
-    // Find board
     const board = await Board.findById(boardId);
-
     if (!board) {
       return res.status(404).json({
         message: "Board not found"
       });
     }
 
-    // Check workspace membership
     const membership = await WorkspaceMember.findOne({
       workspace: board.workspace,
       user: req.user.id
     });
-
     if (!membership) {
       return res.status(403).json({
         message: "You are not a member of this workspace"
@@ -42,6 +39,11 @@ export const createList = async (req, res) => {
 
     const populatedList = await List.findById(list._id)
       .populate("board", "name");
+
+    const io = getIO();
+
+    io.to(`workspace:${board.workspace}`).emit(
+      "list:created",populatedList);  
 
     res.status(201).json({
       message: "List created successfully",

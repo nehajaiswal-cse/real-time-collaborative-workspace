@@ -33,7 +33,7 @@ import { getWorkspaceBoards } from "../api/boardApi";
 import { createWorkspace } from "../api/workspaceApi";
 
 import { getActivities } from "../api/activityApi.js";
-import { createBoard } from "../services/boardService";
+import { createBoard } from "../api/boardApi.js";
 
 const Dashboard = () => {
   const navigate = useNavigate();

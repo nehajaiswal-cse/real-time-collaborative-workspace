@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import socket from "../../socket";
 
-const API_URL = "http://localhost:5000/api/documents";
-
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 function WorkspaceDocuments({ workspaceId }) {
   const [documents, setDocuments] = useState([]);
   const [selectedDocument, setSelectedDocument] = useState(null);
@@ -11,6 +10,7 @@ function WorkspaceDocuments({ workspaceId }) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  
 
   const token = localStorage.getItem("token");
 
@@ -21,7 +21,7 @@ function WorkspaceDocuments({ workspaceId }) {
     const fetchDocuments = async () => {
       try {
         const response = await axios.get(
-          `${API_URL}/workspace/${workspaceId}`,
+          `${API_URL}/documents/workspace/${workspaceId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -111,7 +111,7 @@ function WorkspaceDocuments({ workspaceId }) {
   const handleCreateDocument = async () => {
     try {
       const response = await axios.post(
-        `${API_URL}/workspace/${workspaceId}`,
+        `${API_URL}/documents/workspace/${workspaceId}`,
         {
           title: "Untitled Document",
           content: "",
@@ -161,7 +161,7 @@ function WorkspaceDocuments({ workspaceId }) {
       setSaving(true);
 
       const response = await axios.put(
-        `${API_URL}/${selectedDocument._id}`,
+        `${API_URL}/documents/${selectedDocument._id}`,
         {
           title,
           content,
