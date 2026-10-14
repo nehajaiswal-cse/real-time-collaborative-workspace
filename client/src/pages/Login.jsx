@@ -18,9 +18,11 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { Link, useNavigate } from "react-router-dom";
 
 import { loginUser } from "../api/authApi";
+import { useWorkspace } from "../context/workspaceContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { loadWorkspaces } = useWorkspace();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -87,7 +89,7 @@ if (response.user) {
     JSON.stringify(response.user)
   );
 }
-
+await loadWorkspaces();
 
       // Redirect after successful login
       navigate("/dashboard", { replace: true });
