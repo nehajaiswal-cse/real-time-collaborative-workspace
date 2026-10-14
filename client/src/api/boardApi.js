@@ -18,7 +18,7 @@ export const getBoardById = async (boardId) => {
 export const createBoard = async (name,workspaceId) => {
   const response = await axiosInstance.post("/boards", {name: name.trim(),workspaceId});
 
-  return response.data;
+  return response.data.board || response.data.data || response.data;
 };
 
 export const updateBoard = async (boardId, boardData) => {
