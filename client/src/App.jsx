@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
@@ -9,14 +9,16 @@ import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import Activity from "./pages/Activity.jsx";
 import Settings from "./pages/Settings.jsx";
 import Profile from "./pages/Profile.jsx";
+import Home from "./pages/Home.jsx";
  
 
 
 const App = () => {
    return (
     <Routes>
-      {/* Open Login when visiting the root URL */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
+    {/* Public landing page */}
+      <Route path="/" element={<Home />} />
+
 
       {/* Public routes */}
       <Route path="/login" element={<Login />} />
