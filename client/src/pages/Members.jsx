@@ -41,6 +41,7 @@ export default function Members() {
   const [role, setRole] = useState("member");
 
   const loadWorkspaceMembers = async (wsId) => {
+     console.log("Loading members for workspace:", wsId);
     if (!wsId) {
       setMembers([]);
       return;
@@ -48,6 +49,7 @@ export default function Members() {
 
     try {
       const memberList = await getWorkspaceMembers(wsId);
+       console.log("getWorkspaceMembers response:", memberList);
       setMembers(Array.isArray(memberList) ? memberList : []);
     } catch (err) {
       console.error("Failed to load workspace members:", err);
@@ -61,11 +63,14 @@ export default function Members() {
 
     try {
       const data = await getMyWorkspaces();
+
       const list = Array.isArray(data) ? data : [];
 
       setWorkspaces(list);
 
       const targetId = workspaceId || list[0]?._id || "";
+      console.log("Current workspaceId:", workspaceId);
+console.log("Selected targetId:", targetId);
       setWorkspaceId(targetId);
 
       if (targetId) {
@@ -250,6 +255,7 @@ export default function Members() {
             members={filteredMembers}
             loading={loading}
             error=""
+            workspaceId={workspaceId}
           />
         </Paper>
 

@@ -5,6 +5,32 @@ const SOCKET_URL =
 
 const socket = io(SOCKET_URL, {
   autoConnect: true,
+ 
+auth: (callback) => {
+  const token = localStorage.getItem("token");
+
+  console.log("JWT token exists:", Boolean(token));
+
+  callback({ token });
+},
+
+
+});
+
+socket.on("connect", () => {
+  console.log("Socket connected:", socket.id);
+});
+
+socket.on("connect_error", (error) => {
+  console.error("Socket connection error:", error.message);
+});
+
+socket.on("presence:sync", (userIds) => {
+  console.log("Online users received:", userIds);
+});
+
+socket.on("user:online", (data) => {
+  console.log("User came online:", data);
 });
 
 export default socket;

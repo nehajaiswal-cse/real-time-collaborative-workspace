@@ -185,16 +185,38 @@ const [showDocuments, setShowDocuments] = useState(false);
       setCards((prev) => prev.map((c) => (c._id === movedCard._id ? movedCard : c)));
     };
 
+    const handleBoardCreated = (newBoard) => {
+    setBoard((prev) =>
+      prev.some((board) => board._id === newBoard._id)
+        ? prev
+        : [...prev, newBoard]
+    );
+  };
+  const handleBoardUpdated = (updatedBoard) => {
+    setBoard((prev) =>
+      prev._id === updatedBoard._id ? updatedBoard : prev
+    );
+  };
+
+   const handleBoardDeleted = (boardId) => {
+    setBoard(null);
+  };
+
+
+
     socket.on("card:created", handleCardCreated);
     socket.on("card:updated", handleCardUpdated);
     socket.on("card:deleted", handleCardDeleted);
     socket.on("card:moved", handleCardMoved);
-
+    
     return () => {
       socket.off("card:created", handleCardCreated);
       socket.off("card:updated", handleCardUpdated);
       socket.off("card:deleted", handleCardDeleted);
       socket.off("card:moved", handleCardMoved);
+      socket.off("board:created", handleBoardCreated);
+      socket.off("board:updated", handleBoardUpdated);
+      socket.off("board:deleted", handleBoardDeleted);
       if (currentWorkspaceId) {
         socket.emit("workspace:leave", currentWorkspaceId);
       }

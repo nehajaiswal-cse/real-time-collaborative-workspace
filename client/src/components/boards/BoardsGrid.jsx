@@ -8,6 +8,7 @@ const BoardsGrid = ({
   onBoardMenuClick,
   onUpdated,
   onDeleted,
+  onCreateBoard,
 }) => {
   if (boards.length === 0) {
     return (

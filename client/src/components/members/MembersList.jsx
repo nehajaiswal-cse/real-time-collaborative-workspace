@@ -10,7 +10,17 @@ import {
 } from "@mui/material";
 import Groups from "@mui/icons-material/Groups";
 
-export default function MembersList({ members, loading, error }) {
+import usePresence from "../../hooks/usePresence";
+
+
+export default function MembersList({ members, loading, error,workspaceId }) {
+  const onlineUsers = usePresence(workspaceId);
+   console.log("workspaceId:", workspaceId);
+  console.log("loading:", loading);
+  console.log("error:", error);
+  console.log("members:", members);
+  console.log("onlineUsers:", onlineUsers);
+
   if (loading) {
     return (
       <Stack alignItems="center" py={6}>
@@ -47,10 +57,20 @@ export default function MembersList({ members, loading, error }) {
           member.user && typeof member.user === "object"
             ? member.user
             : {};
+        console.log(
+  "Member user IDs:",
+  members.map((member) => ({
+    name: member.user?.name,
+    id: String(member.user?._id || member.user?.id || ""),
+  }))
+);
 
+console.log("Online user IDs:", onlineUsers);    
+        
+        const userId = String(user._id || user.id || "");
         const name = user.name || "Unknown user";
         const role = member.role || "member";
-
+        const isOnline = userId !== "" && onlineUsers.includes(userId);
         return (
           <Box
             key={user._id || user.email || index}
@@ -67,6 +87,20 @@ export default function MembersList({ members, loading, error }) {
               {name.charAt(0).toUpperCase()}
             </Avatar>
 
+            <Box
+                title={isOnline ? "Online" : "Offline"}
+                sx={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  width: 12,
+                  height: 12,
+                  borderRadius: "50%",
+                  bgcolor: isOnline ? "#22C55E" : "#9CA3AF",
+                  border: "2px solid white",
+                }}
+              ></Box>
+
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography fontWeight={600} color="#3F342C">
                 {name}
@@ -74,6 +108,15 @@ export default function MembersList({ members, loading, error }) {
               <Typography variant="body2" color="text.secondary">
                 {user.email || "Email unavailable"}
               </Typography>
+              <Typography
+  variant="caption"
+  sx={{
+    color: isOnline ? "#16A34A" : "text.secondary",
+    fontWeight: 500,
+  }}
+>
+  {isOnline ? "Online" : "Offline"}
+</Typography>
             </Box>
 
             <Chip
