@@ -1,11 +1,16 @@
 import * as React from "react";
 
+import { useNavigate } from "react-router-dom";
+
 import {
   AppBar,
   Badge,
   Box,
+  Divider,
   IconButton,
   InputBase,
+  ListItemIcon,
+  ListItemText,
   Menu,
   MenuItem,
   Toolbar,
@@ -19,6 +24,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import MailIcon from "@mui/icons-material/Mail";
 import MoreIcon from "@mui/icons-material/MoreVert";
+import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import NotificationBell from "../notifications/NotificationBell";
 
 const PRIMARY_COLOR = "#A9744F";
@@ -35,7 +41,7 @@ const Search = styled("div")(({ theme }) => ({
   marginLeft: theme.spacing(3),
   width: "100%",
 
-  [theme.breakpoints.up("nsm")]: {
+  [theme.breakpoints.up("sm")]: {
     width: "260px",
   },
 
@@ -69,13 +75,66 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
+// Profile icon on top, the logged-in user's name (and email) underneath
+const ProfileSummary = ({ name, email }) => (
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      width: "100%",
+      px: 2,
+      py: 1,
+    }}
+  >
+    <AccountCircle sx={{ fontSize: 48, color: PRIMARY_COLOR }} />
+    <Typography
+      variant="subtitle2"
+      fontWeight={700}
+      noWrap
+      sx={{ maxWidth: 200 }}
+    >
+      {name}
+    </Typography>
+    {email && (
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        noWrap
+        sx={{ maxWidth: 200 }}
+      >
+        {email}
+      </Typography>
+    )}
+  </Box>
+);
+
+const getStoredUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "null");
+  } catch {
+    return null;
+  }
+};
+
 const Navbar = ({ onMenuClick }) => {
+  const navigate = useNavigate();
+
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
     React.useState(null);
+  // Used to open the notification list from the mobile menu
+  const [notificationAnchorEl, setNotificationAnchorEl] =
+    React.useState(null);
+  const [unreadCount, setUnreadCount] = React.useState(0);
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+
+  // Re-read whenever a menu opens so the name is always the current user
+  const user = getStoredUser();
+  const userName = user?.name || "User";
+  const userEmail = user?.email || "";
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -88,6 +147,17 @@ const Navbar = ({ onMenuClick }) => {
 
   const handleMobileMenuOpen = (event) => {
     setMobileMoreAnchorEl(event.currentTarget);
+  };
+
+  const handleOpenNotifications = () => {
+    // show the list under the same 3-dots button, then close the menu
+    setNotificationAnchorEl(mobileMoreAnchorEl);
+    setMobileMoreAnchorEl(null);
+  };
+
+  const handleGoToProfile = () => {
+    handleMenuClose();
+    navigate("/profile");
   };
 
   return (
@@ -171,7 +241,11 @@ const Navbar = ({ onMenuClick }) => {
 
          {/* Notifications */}
           <Box sx={{ color: "#ffffff" }}>
-            <NotificationBell />
+            <NotificationBell
+              externalAnchorEl={notificationAnchorEl}
+              onExternalClose={() => setNotificationAnchorEl(null)}
+              onUnreadChange={setUnreadCount}
+            />
           </Box>
           {/* Account */}
           <IconButton
@@ -201,12 +275,75 @@ const Navbar = ({ onMenuClick }) => {
             onClick={handleMobileMenuOpen}
             sx={{ color: "#ffffff" }}
           >
-            <MoreIcon />
+            <Badge
+              color="error"
+              variant="dot"
+              invisible={unreadCount === 0}
+            >
+              <MoreIcon />
+            </Badge>
           </IconButton>
         </Box>
       </Toolbar>
+
+      {/* Large screens: account menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={isMenuOpen}
+        onClose={handleMenuClose}
+        id="primary-search-account-menu"
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        slotProps={{ paper: { sx: { mt: 1, minWidth: 220 } } }}
+      >
+        <ProfileSummary name={userName} email={userEmail} />
+        <Divider />
+        <MenuItem onClick={handleGoToProfile}>
+          <ListItemIcon>
+            <AccountCircle fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Profile</ListItemText>
+        </MenuItem>
+      </Menu>
+
+      {/* Mobile: messages, notifications, profile */}
+      <Menu
+        anchorEl={mobileMoreAnchorEl}
+        open={isMobileMenuOpen}
+        onClose={handleMenuClose}
+        id="primary-search-account-menu-mobile"
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        slotProps={{ paper: { sx: { mt: 1, minWidth: 220 } } }}
+      >
+        <MenuItem onClick={handleMenuClose}>
+          <ListItemIcon>
+            <Badge badgeContent={4} color="error">
+              <MailIcon />
+            </Badge>
+          </ListItemIcon>
+          <ListItemText>Messages</ListItemText>
+        </MenuItem>
+
+        <MenuItem onClick={handleOpenNotifications}>
+          <ListItemIcon>
+            <Badge badgeContent={unreadCount} color="error" max={99}>
+              <NotificationsNoneIcon />
+            </Badge>
+          </ListItemIcon>
+          <ListItemText>Notifications</ListItemText>
+        </MenuItem>
+
+        <Divider />
+
+        {/* Profile icon with the logged-in user below it */}
+        <MenuItem onClick={handleGoToProfile}>
+          <ProfileSummary name={userName} email={userEmail} />
+        </MenuItem>
+      </Menu>
     </AppBar>
   );
 };
 
 export default Navbar;
+

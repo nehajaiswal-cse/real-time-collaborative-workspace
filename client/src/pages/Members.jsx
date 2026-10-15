@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
@@ -10,6 +9,7 @@ import {
 } from "@mui/material";
 
 import Navbar from "../components/common/Navbar.jsx";
+import useResponsiveSidebar from "../hooks/useResponsiveSidebar.js";
 import Sidebar from "../components/common/Sidebar.jsx";
 import MembersHeader from "../components/members/MembersHeader.jsx";
 import MembersToolbar from "../components/members/MembersToolbar.jsx";
@@ -23,7 +23,7 @@ import {
 } from "../api/workspaceApi.js";
 
 export default function Members() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useResponsiveSidebar();
   const [workspaces, setWorkspaces] = useState([]);
   const [workspaceId, setWorkspaceId] = useState("");
   const [members, setMembers] = useState([]);
@@ -267,3 +267,4 @@ export default function Members() {
     </Box>
   );
 }
+

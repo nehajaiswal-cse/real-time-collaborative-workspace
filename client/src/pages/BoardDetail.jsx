@@ -30,6 +30,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 
 import Navbar from "../components/common/Navbar.jsx";
+import useResponsiveSidebar from "../hooks/useResponsiveSidebar.js";
 import Sidebar from "../components/common/Sidebar.jsx";
 import socket from "../socket";
 import {
@@ -55,7 +56,7 @@ const BoardDetail = () => {
   const { boardId } = useParams();
   const navigate = useNavigate();
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useResponsiveSidebar();
   const [board, setBoard] = useState(null);
   const [lists, setLists] = useState([]);
   const [cards, setCards] = useState([]);

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -20,6 +19,7 @@ import AddIcon from "@mui/icons-material/Add";
 import ViewKanbanIcon from "@mui/icons-material/ViewKanban";
 
 import Navbar from "../components/common/Navbar.jsx";
+import useResponsiveSidebar from "../hooks/useResponsiveSidebar.js";
 import Sidebar from "../components/common/Sidebar.jsx";
 import WelcomeHeader from "../components/dashboard/WelcomeHeader.jsx";
 import OverviewCards from "../components/dashboard/OverviewCards.jsx";
@@ -42,7 +42,7 @@ const Dashboard = () => {
   // GENERAL STATE
   // =====================================================
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useResponsiveSidebar();
   const [activities, setActivities] = useState([]);
   const [boards, setBoards] = useState([]);
   const [error, setError] = useState("");

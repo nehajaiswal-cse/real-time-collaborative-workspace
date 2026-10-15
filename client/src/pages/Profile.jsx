@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 
 import Navbar from "../components/common/Navbar.jsx";
+import useResponsiveSidebar from "../hooks/useResponsiveSidebar.js";
 import Sidebar from "../components/common/Sidebar.jsx";
 
 import ProfileHeader from "../components/profile/ProfileHeader.jsx";
@@ -17,7 +18,7 @@ import AccountInformation from "../components/profile/AccountInformation.jsx";
 import { getCurrentUser } from "../api/settingsApi.js";
 
 const Profile = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useResponsiveSidebar();
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -71,7 +72,7 @@ const Profile = () => {
 
   return (
     <>
-      <Navbar />
+      <Navbar onMenuClick={() => setSidebarOpen((previous) => !previous)} />
 
       <Sidebar
         open={sidebarOpen}
