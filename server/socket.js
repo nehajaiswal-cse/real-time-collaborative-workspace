@@ -30,10 +30,9 @@ export const initSocket = (server) => {
         process.env.JWT_SECRET
       );
 
-      socket.userId = decoded.id || decoded.userId;
-
-      if (!socket.userId) {
-        return next(new Error("Invalid authentication token"));
+    socket.on("workspace:join", (workspaceId) => {
+      if (!workspaceId) {
+        return;
       }
 
       next();
@@ -94,7 +93,6 @@ export const initSocket = (server) => {
       }
     });
 
-    // Leave workspace
     socket.on("workspace:leave", (workspaceId) => {
       if (!workspaceId) {
         return;
