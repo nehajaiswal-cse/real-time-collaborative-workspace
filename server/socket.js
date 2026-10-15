@@ -1,10 +1,6 @@
 
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
-<<<<<<< HEAD
-=======
-import WorkspaceMember from "./models/workspaceMember.js";
->>>>>>> 93db1f3a42eb2ba05c95b191dc03211146c40f37
 
 let io;
 
@@ -87,7 +83,6 @@ const getWorkspaceOnlineUsers = (workspaceId) => {
 
 export const initSocket = (server) => {
   io = new Server(server, {
-<<<<<<< HEAD
     cors: {
       origin: process.env.CLIENT_URL,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
@@ -109,31 +104,6 @@ export const initSocket = (server) => {
 
   io.on("connection", (socket) => {
     const userId = socket.data.userId;
-=======
-  cors: {
-    origin: [
-      "https://real-time-collaborative-workspace-qmc2.onrender.com",
-      "http://localhost:5173",
-    ],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    credentials: true,
-  },
-});
-
-  // Socket Authentication
-  io.use((socket, next) => {
-    try {
-      const token = socket.handshake.auth?.token;
-
-      if (!token) {
-        return next(new Error("Authentication token required"));
-      }
-
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET
-      );
->>>>>>> 93db1f3a42eb2ba05c95b191dc03211146c40f37
 
     addOnlineUser(userId, socket.id);
 
@@ -158,69 +128,10 @@ export const initSocket = (server) => {
         getWorkspaceOnlineUsers(workspaceId)
       );
 
-<<<<<<< HEAD
       // Notify other workspace clients of this user's presence.
       socket.to(room).emit("user:online", { userId });
 
       console.log(`Socket ${socket.id} joined ${room}`);
-=======
-      next();
-    } catch (error) {
-      console.error("Socket authentication error:", error.message);
-
-      next(new Error("Invalid or expired token"));
-    }
-  });
-
-  io.on("connection", (socket) => {
-    console.log(
-      `Socket connected: ${socket.id}, User: ${socket.userId}`
-    );
-    
-    socket.on("workspace:join", async (workspaceId) => {
-      try {
-        if (!workspaceId) {
-          return socket.emit("workspace:error", {
-            message: "Workspace ID is required",
-          });
-        }
-
-        // Check workspace membership
-        const membership = await WorkspaceMember.findOne({
-          workspace: workspaceId,
-          user: socket.userId,
-        });
-
-        if (!membership) {
-          return socket.emit("workspace:error", {
-            message: "You are not a member of this workspace",
-          });
-        }
-
-        const room = `workspace:${workspaceId}`;
-
-        socket.join(room);
-
-        console.log(
-          `User ${socket.userId} joined ${room}`
-        );
-
-        socket.emit("workspace:joined", {
-          workspaceId,
-          message: "Joined workspace successfully",
-        });
-
-        socket.to(room).emit("workspace:user-joined", {
-          userId: socket.userId,
-        });
-      } catch (error) {
-        console.error("Workspace join error:", error);
-
-        socket.emit("workspace:error", {
-          message: "Unable to join workspace",
-        });
-      }
->>>>>>> 93db1f3a42eb2ba05c95b191dc03211146c40f37
     });
 
     socket.on("workspace:leave", (workspaceId) => {
@@ -246,21 +157,7 @@ export const initSocket = (server) => {
         io.to(room).emit("user:offline", { userId });
       }
 
-<<<<<<< HEAD
       console.log(`Socket ${socket.id} left ${room}`);
-=======
-      const room = `workspace:${workspaceId}`;
-
-      socket.leave(room);
-
-      console.log(
-        `User ${socket.userId} left ${room}`
-      );
-
-      socket.to(room).emit("workspace:user-left", {
-        userId: socket.userId,
-      });
->>>>>>> 93db1f3a42eb2ba05c95b191dc03211146c40f37
     });
 
     // BOARD ROOM
@@ -291,7 +188,6 @@ export const initSocket = (server) => {
       );
     });
 
-<<<<<<< HEAD
     // Capture workspace rooms before Socket.IO removes them.
     let joinedWorkspaces = [];
 
@@ -323,64 +219,12 @@ export const initSocket = (server) => {
       }
 
       console.log(`Socket disconnected: ${socket.id}`);
-=======
-   
-    // Chat message
-    socket.on(
-      "chat:send",
-      async ({ workspaceId, message }) => {
-        try {
-          if (!workspaceId || !message?.trim()) {
-            return;
-          }
-
-          // Verify membership before sending
-          const membership = await WorkspaceMember.findOne({
-            workspace: workspaceId,
-            user: socket.userId,
-          });
-
-          if (!membership) {
-            return socket.emit("chat:error", {
-              message: "You are not a member of this workspace",
-            });
-          }
-
-          io.to(`workspace:${workspaceId}`).emit(
-            "chat:message",
-            {
-              userId: socket.userId,
-              message: message.trim(),
-              createdAt: new Date(),
-            }
-          );
-        } catch (error) {
-          console.error("Chat send error:", error);
-
-          socket.emit("chat:error", {
-            message: "Unable to send message",
-          });
-        }
-      }
-    );
-
-    // Disconnect
-    socket.on("disconnect", (reason) => {
-      console.log(
-        `Socket disconnected: ${socket.id}`,
-        reason
-      );
->>>>>>> 93db1f3a42eb2ba05c95b191dc03211146c40f37
     });
   });
 
   return io;
 };
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 93db1f3a42eb2ba05c95b191dc03211146c40f37
 export const getIO = () => {
   if (!io) {
     throw new Error(
