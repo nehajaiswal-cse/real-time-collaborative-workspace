@@ -21,6 +21,7 @@ import BoardsGrid from "../components/boards/BoardsGrid";
 import { getWorkspaceBoards ,createBoard } from "../api/boardApi.js";
 
 import { useWorkspace } from "../context/workspaceContext.jsx";
+import socket from "../socket";
 
 const MyBoards = () => {
   const navigate = useNavigate();
@@ -41,10 +42,6 @@ const MyBoards = () => {
 
   const [creating, setCreating] =
     useState(false);
-
-  // ==========================================
-  // Load boards for selected workspace
-  // ==========================================
 
   useEffect(() => {
     const loadBoards = async () => {
@@ -89,17 +86,85 @@ setBoards(
     loadBoards();
   }, [selectedWorkspace?._id]);
 
-  // ==========================================
-  // Sidebar
-  // ==========================================
+
+  useEffect(() => {
+    const workspaceId = selectedWorkspace?._id;
+
+    if (!workspaceId) return;
+
+    const joinWorkspace = () => {
+      socket.emit("workspace:join", workspaceId);
+    };
+
+    if (socket.connected) {
+      joinWorkspace();
+    } else {
+      socket.on("connect", joinWorkspace);
+    }
+
+    const handleBoardCreatedRealtime = (payload) => {
+      const createdBoard = payload?.board || payload;
+
+      if (
+        !createdBoard?._id ||
+        String(createdBoard.workspace?._id || createdBoard.workspace) !==
+          String(workspaceId)
+      ) {
+        return;
+      }
+
+      setBoards((prevBoards) =>
+        prevBoards.some((board) => board._id === createdBoard._id)
+          ? prevBoards
+          : [createdBoard, ...prevBoards]
+      );
+    };
+    const handleBoardUpdatedRealtime = (payload) => {
+      const updatedBoard = payload?.board || payload;
+
+      if (!updatedBoard?._id) return;
+
+      setBoards((prevBoards) =>
+        prevBoards.map((board) =>
+          board._id === updatedBoard._id
+            ? { ...board, ...updatedBoard }
+            : board
+        )
+      );
+    };
+
+    const handleBoardDeletedRealtime = (payload) => {
+      const deletedBoardId =
+        payload?._id || payload?.boardId || payload;
+
+      if (!deletedBoardId) return;
+
+      setBoards((prevBoards) =>
+        prevBoards.filter(
+          (board) => board._id !== deletedBoardId
+        )
+      );
+    };
+
+    socket.on("board:created", handleBoardCreatedRealtime);
+    socket.on("board:updated", handleBoardUpdatedRealtime);
+    socket.on("board:deleted", handleBoardDeletedRealtime);
+
+    return () => {
+      socket.off("connect", joinWorkspace);
+      socket.off("board:created", handleBoardCreatedRealtime);
+      socket.off("board:updated", handleBoardUpdatedRealtime);
+      socket.off("board:deleted", handleBoardDeletedRealtime);
+
+      if (socket.connected) {
+        socket.emit("workspace:leave", workspaceId);
+      }
+    };
+  }, [selectedWorkspace?._id]);
 
   const handleMenuClick = () => {
     setSidebarOpen((prev) => !prev);
   };
-
-  // ==========================================
-  // Create Board
-  // ==========================================
 
   const handleCreateBoard = () => {
     if (!selectedWorkspace?._id) {
@@ -109,10 +174,6 @@ setBoards(
 
     setCreateBoardOpen(true);
   };
-
-  // ==========================================
-  // Open Board
-  // ==========================================
 
   const handleOpenBoard = (board) => {
     if (board?._id) {
@@ -129,7 +190,6 @@ const handleBoardDeleted = (deletedBoardId) => {
 const handleBoardUpdated = (result) => {
   console.log("Updated board response:", result);
 
-  // API response directly returns the board object
   const updatedBoard = result?.board || result;
 
   if (!updatedBoard?._id) {
@@ -153,48 +213,64 @@ const handleBoardUpdated = (result) => {
     console.log("Board menu:", board);
   };
 
-  // ==========================================
-  // Create Board Submit
-  // ==========================================
+const handleCreateBoardSubmit = async (e) => {
+  e.preventDefault();
 
-  const handleCreateBoardSubmit = async (e) => {
-    e.preventDefault();
+  const trimmedName = newBoardName.trim();
 
-    if (!newBoardName.trim()) return;
+  if (!trimmedName) return;
 
-    if (!selectedWorkspace?._id) {
-      alert("Please select a workspace first.");
+  if (!selectedWorkspace?._id) {
+    alert("Please select a workspace first.");
+    return;
+  }
+
+  try {
+    setCreating(true);
+
+    const result = await createBoard(
+      trimmedName,
+      selectedWorkspace._id
+    );
+
+    // Support both { board: {...} } and direct board responses.
+    const createdBoard = result?.board ?? result;
+
+    if (!createdBoard?._id || !createdBoard?.name) {
+      console.error(
+        "Invalid board creation response:",
+        result
+      );
+
+      alert(
+        "Board was created, but its response is invalid. Check the browser console."
+      );
       return;
     }
 
-    try {
-      setCreating(true);
+    console.log("Created board:", createdBoard);
 
-      const newBoard = await createBoard(
-        newBoardName.trim(),
-        selectedWorkspace._id
-      );
+    setBoards((prevBoards) => [
+      createdBoard,
+      ...prevBoards.filter(
+        (board) => board._id !== createdBoard._id
+      ),
+    ]);
 
-      const createdBoard = newBoard;
+    setNewBoardName("");
+    setCreateBoardOpen(false);
+  } catch (error) {
+    console.error("Failed to create board:", error);
 
-      setBoards((prev) => [
-        createdBoard,
-        ...prev,
-      ]);
-
-      setNewBoardName("");
-      setCreateBoardOpen(false);
-    } catch (error) {
-      console.error(error);
-
-      alert(
+    alert(
+      error.response?.data?.message ||
         error.message ||
-          "Failed to create board"
-      );
-    } finally {
-      setCreating(false);
-    }
-  };
+        "Failed to create board"
+    );
+  } finally {
+    setCreating(false);
+  }
+};
 
   return (
     <Box
@@ -267,13 +343,10 @@ const handleBoardUpdated = (result) => {
             }
             onUpdated={handleBoardUpdated}
             onDeleted={handleBoardDeleted}
+            onCreateBoard={handleCreateBoard}
           />
         )}
       </Box>
-
-      {/* ================================= */}
-      {/* CREATE BOARD DIALOG */}
-      {/* ================================= */}
 
       <Dialog
         open={createBoardOpen}

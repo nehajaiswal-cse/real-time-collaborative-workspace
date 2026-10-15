@@ -37,6 +37,7 @@ const BoardCard = ({
   onDeleted,
   onEdit,
   onDelete,
+  oncreateBoard,
 }) => {
   const [anchorEl, setAnchorEl] = useState(null);
 

@@ -187,75 +187,43 @@ useEffect(() => {
     );
   };
 
-  
-const handleListCreated = (newList) => {
-  const eventBoardId =
-    typeof newList.board === "object"
-      ? newList.board?._id
-      : newList.board;
-
-  if (eventBoardId?.toString() !== boardId.toString()) return;
-
-  setLists((prev) => {
-    if (prev.some((list) => list._id === newList._id)) {
-      return prev;
-    }
-
-    return [...prev, newList].sort(
-      (a, b) => (a.position ?? 0) - (b.position ?? 0)
+    const handleBoardCreated = (newBoard) => {
+    setBoard((prev) =>
+      prev.some((board) => board._id === newBoard._id)
+        ? prev
+        : [...prev, newBoard]
     );
-  });
-};
-
-
-  const joinWorkspace = (workspaceId) => {
-    if (cancelled || !workspaceId) return;
-
-    currentWorkspaceId = workspaceId;
-    socket.emit("workspace:join", workspaceId);
+  };
+  const handleBoardUpdated = (updatedBoard) => {
+    setBoard((prev) =>
+      prev._id === updatedBoard._id ? updatedBoard : prev
+    );
   };
 
-  const handleConnect = () => {
-    if (currentWorkspaceId) {
-      socket.emit("workspace:join", currentWorkspaceId);
-    }
+   const handleBoardDeleted = (boardId) => {
+    setBoard(null);
   };
 
-  socket.on("connect", handleConnect);
-  socket.on("card:created", handleCardCreated);
-  socket.on("card:updated", handleCardUpdated);
-  socket.on("card:deleted", handleCardDeleted);
-  socket.on("card:moved", handleCardMoved);
-  socket.on("list:created", handleListCreated);
-  if (!socket.connected) {
-    socket.connect();
-  }
 
-  fetchBoardDetails().then((workspaceId) => {
-    if (!workspaceId || cancelled) return;
 
-    currentWorkspaceId = workspaceId;
-
-    if (socket.connected) {
-      joinWorkspace(workspaceId);
-    }
-  });
-
-  return () => {
-    cancelled = true;
-
-    socket.off("connect", handleConnect);
-    socket.off("card:created", handleCardCreated);
-    socket.off("card:updated", handleCardUpdated);
-    socket.off("card:deleted", handleCardDeleted);
-    socket.off("card:moved", handleCardMoved);
-    socket.off("list:created", handleListCreated);
-
-    if (currentWorkspaceId && socket.connected) {
-      socket.emit("workspace:leave", currentWorkspaceId);
-    }
-  };
-}, [boardId]);
+    socket.on("card:created", handleCardCreated);
+    socket.on("card:updated", handleCardUpdated);
+    socket.on("card:deleted", handleCardDeleted);
+    socket.on("card:moved", handleCardMoved);
+    
+    return () => {
+      socket.off("card:created", handleCardCreated);
+      socket.off("card:updated", handleCardUpdated);
+      socket.off("card:deleted", handleCardDeleted);
+      socket.off("card:moved", handleCardMoved);
+      socket.off("board:created", handleBoardCreated);
+      socket.off("board:updated", handleBoardUpdated);
+      socket.off("board:deleted", handleBoardDeleted);
+      if (currentWorkspaceId) {
+        socket.emit("workspace:leave", currentWorkspaceId);
+      }
+    };
+  }, [boardId]);
 
   const handleDragEnd = async (result) => {
     const { destination, source, draggableId } = result;
