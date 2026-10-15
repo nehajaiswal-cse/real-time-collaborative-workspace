@@ -13,7 +13,6 @@ export const initSocket = (server) => {
   io.on("connection", (socket) => {
     console.log("Socket connected:", socket.id);
 
-    // Join workspace room
     socket.on("workspace:join", (workspaceId) => {
       if (!workspaceId) {
         return;
@@ -24,7 +23,6 @@ export const initSocket = (server) => {
       console.log(`Socket ${socket.id} joined workspace:${workspaceId}`);
     });
 
-    // Leave workspace room
     socket.on("workspace:leave", (workspaceId) => {
       if (!workspaceId) {
         return;

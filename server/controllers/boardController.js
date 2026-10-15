@@ -6,7 +6,9 @@ import {
   cacheBoards,
   invalidateWorkspaceBoards,
 } from "../utils/boardCache.js"
-// Create Board
+import { getIO } from "../socket.js";
+
+
 export const createBoard = async (req, res) => {
   try {
     const { name, workspaceId } = req.body;
@@ -50,6 +52,10 @@ export const createBoard = async (req, res) => {
       boardId: board._id,
       message: `created board "${board.name}"`,
     });
+
+  getIO()
+  .to(`workspace:${workspaceId}`)
+  .emit("board:created", populatedBoard);
 
     res.status(201).json({
       message: "Board created successfully",
@@ -200,7 +206,9 @@ export const updateBoard = async (req, res) => {
       .populate("createdBy", "name email");
 
     await invalidateWorkspaceBoards(board.workspace.toString());
-    console.log("Redis cache invalidated");
+   getIO()
+  .to(`workspace:${board.workspace.toString()}`)
+  .emit("board:updated", updatedBoard);
 
     res.json({
       message: "Board updated successfully",
@@ -240,9 +248,14 @@ export const deleteBoard = async (req, res) => {
         message: "You are not a member of this workspace"
       });
     }
+     
+    const workspaceId = board.workspace.toString();
 
     await Board.findByIdAndDelete(id);
     await invalidateWorkspaceBoards(board.workspace.toString());
+    getIO()
+  .to(`workspace:${workspaceId}`)
+  .emit("board:deleted", { boardId: id });
 
     res.json({
       message: "Board deleted successfully"
