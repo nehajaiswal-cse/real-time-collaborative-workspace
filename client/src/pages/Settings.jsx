@@ -14,7 +14,6 @@ import WorkspaceSettings from "../components/settings/WorkspaceSettings.jsx";
 import { getCurrentUser, getMyWorkspaces } from "../api/settingsApi.js";
 
 const PREFERENCES_KEY = "syncspace-settings-preferences";
-
 const NAVBAR_HEIGHT = 72;
 const SIDEBAR_WIDTH_OPEN = 256;
 const SIDEBAR_WIDTH_CLOSED = 72;
@@ -28,13 +27,9 @@ const DEFAULT_PREFERENCES = {
 const readPreferences = () => {
   try {
     const saved = localStorage.getItem(PREFERENCES_KEY);
-
-    if (!saved) {
-      return DEFAULT_PREFERENCES;
-    }
+    if (!saved) return DEFAULT_PREFERENCES;
 
     const parsed = JSON.parse(saved);
-
     return {
       theme:
         parsed.theme === "dark" || parsed.theme === "light"
@@ -54,21 +49,16 @@ const readPreferences = () => {
   }
 };
 
-// Shared error message resolver, removes the duplicated if/else chains.
 const getErrorMessage = (error, messages) => {
   const status = error.response?.status;
-
   if (status === 401) return messages.unauthorized;
   if (status === 404) return messages.notFound;
   if (!error.response) {
     return "Cannot connect to the backend. Check that the server is running.";
   }
-
   return error.response?.data?.message || messages.fallback;
 };
 
-// Every grid cell is a flex container, so the card inside stretches
-// to the full cell height and never gets clipped.
 const cardSlotSx = {
   display: "flex",
   flexDirection: "column",
@@ -81,21 +71,16 @@ const cardSlotSx = {
 
 const Settings = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-
   const [user, setUser] = useState(null);
   const [workspaces, setWorkspaces] = useState([]);
   const [workspaceId, setWorkspaceId] = useState("");
-
   const [profileLoading, setProfileLoading] = useState(true);
   const [workspaceLoading, setWorkspaceLoading] = useState(true);
-
   const [profileError, setProfileError] = useState("");
   const [workspaceError, setWorkspaceError] = useState("");
-
   const [preferences, setPreferences] = useState(readPreferences);
   const [noticeOpen, setNoticeOpen] = useState(false);
 
-  // LOAD PROFILE
   const loadProfile = useCallback(async () => {
     setProfileLoading(true);
     setProfileError("");
@@ -105,7 +90,6 @@ const Settings = () => {
       setUser(result);
     } catch (error) {
       console.error("Failed to load profile:", error);
-
       setProfileError(
         getErrorMessage(error, {
           unauthorized: "Your session may have expired. Please log in again.",
@@ -118,17 +102,17 @@ const Settings = () => {
     }
   }, []);
 
-  // LOAD WORKSPACES
   const loadWorkspaces = useCallback(async () => {
     setWorkspaceLoading(true);
     setWorkspaceError("");
 
     try {
       const result = await getMyWorkspaces();
-      const list = Array.isArray(result) ? result : [];
+      const list = Array.isArray(result)
+        ? result.filter((item) => item && item._id)
+        : [];
 
       setWorkspaces(list);
-
       setWorkspaceId((previousId) =>
         list.some((item) => item._id === previousId)
           ? previousId
@@ -136,7 +120,6 @@ const Settings = () => {
       );
     } catch (error) {
       console.error("Failed to load workspaces:", error);
-
       setWorkspaceError(
         getErrorMessage(error, {
           unauthorized: "Please log in again to view your workspaces.",
@@ -144,7 +127,6 @@ const Settings = () => {
           fallback: "Unable to load workspaces.",
         })
       );
-
       setWorkspaces([]);
       setWorkspaceId("");
     } finally {
@@ -152,16 +134,13 @@ const Settings = () => {
     }
   }, []);
 
-  // INITIAL LOAD
   useEffect(() => {
     loadProfile();
     loadWorkspaces();
   }, [loadProfile, loadWorkspaces]);
 
-  // PREFERENCES
   const handlePreferencesChange = (nextPreferences) => {
     setPreferences(nextPreferences);
-
     try {
       localStorage.setItem(PREFERENCES_KEY, JSON.stringify(nextPreferences));
       setNoticeOpen(true);
@@ -170,7 +149,6 @@ const Settings = () => {
     }
   };
 
-  // REFRESH
   const refreshSettings = () => {
     loadProfile();
     loadWorkspaces();
@@ -179,10 +157,8 @@ const Settings = () => {
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#FAF8F6" }}>
       <Navbar onMenuClick={() => setSidebarOpen((previous) => !previous)} />
-
       <Sidebar open={sidebarOpen} />
 
-      {/* MAIN CONTENT */}
       <Box
         component="main"
         sx={{
@@ -200,9 +176,7 @@ const Settings = () => {
           boxSizing: "border-box",
         }}
       >
-        {/* PAGE CONTAINER */}
         <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto" }}>
-          {/* PAGE HEADER */}
           <Box
             sx={{
               display: "flex",
@@ -216,7 +190,6 @@ const Settings = () => {
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <SettingsHeader />
             </Box>
-
             <Button
               size="medium"
               variant="outlined"
@@ -240,7 +213,6 @@ const Settings = () => {
             </Button>
           </Box>
 
-          {/* INFORMATION ALERT */}
           <Alert
             severity="info"
             sx={{
@@ -254,11 +226,6 @@ const Settings = () => {
             Notification preferences are saved in this browser.
           </Alert>
 
-          {/* SETTINGS GRID
-              One column below lg, two columns from lg.
-              The sidebar eats 256px at md, so a two column layout
-              there leaves each card too narrow and causes the crowding.
-              Rows are auto sized: min 320px, but they grow with content. */}
           <Box
             sx={{
               display: "grid",
@@ -276,24 +243,17 @@ const Settings = () => {
             }}
           >
             <Box sx={cardSlotSx}>
-              <ProfileSettings
-                user={user}
-                loading={profileLoading}
-                error={profileError}
-              />
+              <ProfileSettings user={user} loading={profileLoading} error={profileError} />
             </Box>
-
             <Box sx={cardSlotSx}>
               <PreferenceSettings
                 preferences={preferences}
                 onChange={handlePreferencesChange}
               />
             </Box>
-
             <Box sx={cardSlotSx}>
               <SecuritySettings />
             </Box>
-
             <Box sx={cardSlotSx}>
               <WorkspaceSettings
                 workspaces={workspaces}
@@ -305,7 +265,6 @@ const Settings = () => {
             </Box>
           </Box>
 
-          {/* FOOTER */}
           <Typography
             variant="caption"
             sx={{
@@ -320,7 +279,6 @@ const Settings = () => {
         </Box>
       </Box>
 
-      {/* SNACKBAR */}
       <Snackbar
         open={noticeOpen}
         autoHideDuration={2500}
