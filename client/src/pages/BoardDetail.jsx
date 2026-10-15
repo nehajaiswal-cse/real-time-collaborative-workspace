@@ -159,31 +159,32 @@ const [showDocuments, setShowDocuments] = useState(false);
   fetchMembers();
 }, [board?.workspace]);
 
-  useEffect(() => {
-    let currentWorkspaceId = null;
 
-    fetchBoardDetails().then((wsId) => {
-      if (wsId) {
-        currentWorkspaceId = wsId;
-        socket.emit("workspace:join", wsId);
-      }
-    });
+useEffect(() => {
+  let currentWorkspaceId = null;
+  let cancelled = false;
 
-    const handleCardCreated = (card) => {
-      setCards((prev) => (prev.some((c) => c._id === card._id) ? prev : [...prev, card]));
-    };
+  const handleCardCreated = (card) => {
+    setCards((prev) =>
+      prev.some((c) => c._id === card._id) ? prev : [...prev, card]
+    );
+  };
 
-    const handleCardUpdated = (updatedCard) => {
-      setCards((prev) => prev.map((c) => (c._id === updatedCard._id ? updatedCard : c)));
-    };
+  const handleCardUpdated = (updatedCard) => {
+    setCards((prev) =>
+      prev.map((c) => (c._id === updatedCard._id ? updatedCard : c))
+    );
+  };
 
-    const handleCardDeleted = (cardId) => {
-      setCards((prev) => prev.filter((c) => c._id !== cardId));
-    };
+  const handleCardDeleted = (cardId) => {
+    setCards((prev) => prev.filter((c) => c._id !== cardId));
+  };
 
-    const handleCardMoved = (movedCard) => {
-      setCards((prev) => prev.map((c) => (c._id === movedCard._id ? movedCard : c)));
-    };
+  const handleCardMoved = (movedCard) => {
+    setCards((prev) =>
+      prev.map((c) => (c._id === movedCard._id ? movedCard : c))
+    );
+  };
 
     const handleBoardCreated = (newBoard) => {
     setBoard((prev) =>
@@ -287,6 +288,7 @@ const [showDocuments, setShowDocuments] = useState(false);
       setLists((prev) => [...prev, data.list]);
       setNewListName("");
       setNewListOpen(false);
+      
     } catch (err) {
       alert(err.message);
     }
