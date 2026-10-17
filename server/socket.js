@@ -121,7 +121,7 @@ export const initSocket = (server) => {
       socket.join(room);
      
        console.log("Workspace joined:", room);
-  console.log("Online users:", getWorkspaceOnlineUsers(workspaceId));
+       console.log("Online users:", getWorkspaceOnlineUsers(workspaceId));
       // Send a snapshot of online users in this workspace.
       socket.emit(
         "presence:sync",
